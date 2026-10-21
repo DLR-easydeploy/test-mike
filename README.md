@@ -1,26 +1,22 @@
-# Enterprise Services Portfolio: Data + Value Release
+# Enterprise Services Portfolio: Guided Funnel Release
 
-This release builds on the hybrid portfolio/navigation baseline.
+## Five primary navigation choices
+1. Overview
+2. Explore Portfolio
+3. Improve Portfolio
+4. Decisions & Actions
+5. Administration
 
-## New
-- Value & Outcomes profiles for every service offering
-- Business outcome
-- Customer / stakeholder
-- Criticality
-- Value provided
-- Key measures
-- Strategic alignment
-- Review status
-- Assessment Campaign with completion scoring
-- Next offering to assess
-- Offering cockpit now combines value, assessment, technology, governance, actions and history
-- Understand → Assess → Decide → Act → Measure workflow surfaced in the cockpit
-- Value data is persisted in SQLite and included in full backup export
+## Consolidation
+- Services, Offerings, Products, and Relationships are tabs inside Explore Portfolio.
+- Governance, Assessment Campaign, Rationalization, and Data Quality become guided filters inside Improve Portfolio or Administration.
+- Decisions, Actions, and Outcomes are combined.
+- Maintenance tools are isolated under Administration.
 
-## Preserved
-- Overview and Portfolio Health
-- Domain → Service → Offering exploration
-- Services, Offerings, Products & Systems, Offering–Product Map
-- Governance Queue
-- Decisions, Actions, Rationalization
-- Portfolio Admin, Data Quality, Backup / Restore
+## Drill-through and editing
+- Services open Service cockpits and editable fields.
+- Products open Product cockpits and linked offerings.
+- Relationships open relationship detail and editable role/confidence/status/health/notes.
+- Assessments open immutable record detail with links to Offering and Create New Assessment.
+- Rationalization findings link to affected objects.
+- Offering remains the center of gravity.

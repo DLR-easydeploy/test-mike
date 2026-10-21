@@ -1,20 +1,17 @@
-PORTFOLIO DATA + VALUE RELEASE
+GUIDED FUNNEL UX RELEASE
 
-Target repository:
+Target:
 /Users/mwolfe@digitalrealty.com/Projects/test-mike
 
-FAST PATH
-1. Unzip enterprise_services_portfolio_value.zip in Downloads.
+1. Unzip enterprise_services_portfolio_guided.zip in Downloads.
 2. Run:
-   ~/Downloads/enterprise_services_portfolio_value/scripts/install.sh
+   ~/Downloads/enterprise_services_portfolio_guided/scripts/install.sh
 3. Start:
    /Users/mwolfe@digitalrealty.com/Projects/test-mike/scripts/start-local.sh
-4. Test in a second Terminal:
+4. Test from another Terminal:
    /Users/mwolfe@digitalrealty.com/Projects/test-mike/scripts/test-local.sh
 5. Open http://localhost:3000
-6. Test Value & Outcomes, Assessment Campaign, and one offering cockpit.
+6. Verify the five primary choices and drill into a Service, Product, Relationship, Assessment, and Rationalization finding.
 7. Stop with Control+C.
 8. Push:
    /Users/mwolfe@digitalrealty.com/Projects/test-mike/scripts/push-main.sh
-
-Existing SQLite data is upgraded in place. The new offering_values table is additive and does not remove existing portfolio, assessment, decision, or action data.
