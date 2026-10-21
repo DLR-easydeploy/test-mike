@@ -34,6 +34,22 @@ CREATE TABLE IF NOT EXISTS assessments (
   updated_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_assessments_entity_date ON assessments(entity_id, assessment_date DESC, created_at DESC);
+CREATE TABLE IF NOT EXISTS actions (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  offering_id TEXT NOT NULL DEFAULT '',
+  product_id TEXT NOT NULL DEFAULT '',
+  owner TEXT NOT NULL DEFAULT '',
+  due_date TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'Not Started',
+  priority TEXT NOT NULL DEFAULT 'Medium',
+  expected_outcome TEXT NOT NULL DEFAULT '',
+  source_assessment_id TEXT NOT NULL DEFAULT '',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_actions_status_due ON actions(status, due_date);
 CREATE TABLE IF NOT EXISTS audit_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   entity_type TEXT NOT NULL,
@@ -100,8 +116,19 @@ function createAssessment(value) {
   transaction();
   return fromRow(row);
 }
+
+const selectActions = db.prepare("SELECT * FROM actions ORDER BY CASE priority WHEN 'Critical' THEN 1 WHEN 'High' THEN 2 WHEN 'Medium' THEN 3 ELSE 4 END, due_date, created_at DESC");
+const insertAction = db.prepare(`INSERT INTO actions (id,title,description,offering_id,product_id,owner,due_date,status,priority,expected_outcome,source_assessment_id,created_at,updated_at)
+VALUES (@id,@title,@description,@offering_id,@product_id,@owner,@due_date,@status,@priority,@expected_outcome,@source_assessment_id,@created_at,@updated_at)`);
+const updateActionStmt = db.prepare(`UPDATE actions SET title=@title,description=@description,offering_id=@offering_id,product_id=@product_id,owner=@owner,due_date=@due_date,status=@status,priority=@priority,expected_outcome=@expected_outcome,source_assessment_id=@source_assessment_id,updated_at=@updated_at WHERE id=@id`);
+function actionRow(value){const now=new Date().toISOString();return {id:value.id||'action-'+Date.now(),title:value.title||'',description:value.description||'',offering_id:value.offeringId||'',product_id:value.productId||'',owner:value.owner||'',due_date:value.dueDate||'',status:value.status||'Not Started',priority:value.priority||'Medium',expected_outcome:value.expectedOutcome||'',source_assessment_id:value.sourceAssessmentId||'',created_at:value.createdAt||now,updated_at:now};}
+function actionValue(row){return {id:row.id,title:row.title,description:row.description,offeringId:row.offering_id,productId:row.product_id,owner:row.owner,dueDate:row.due_date,status:row.status,priority:row.priority,expectedOutcome:row.expected_outcome,sourceAssessmentId:row.source_assessment_id,createdAt:row.created_at,updatedAt:row.updated_at};}
+function listActions(){return selectActions.all().map(actionValue);}
+function createAction(value){const row=actionRow(value);insertAction.run(row);insertAudit.run({entity_type:'action',entity_id:row.id,action:'created',actor:row.owner,details_json:JSON.stringify({title:row.title,status:row.status}),created_at:row.created_at});return actionValue(row);}
+function updateAction(id,value){const existing=selectActions.all().find(x=>x.id===id);if(!existing)return null;const row=actionRow({...actionValue(existing),...value,id,createdAt:existing.created_at});updateActionStmt.run(row);insertAudit.run({entity_type:'action',entity_id:id,action:'updated',actor:row.owner,details_json:JSON.stringify({status:row.status}),created_at:row.updated_at});return actionValue(row);}
+
 function storageInfo() {
-  return {adapter:'sqlite',databasePath,persistentVolumeExpected:databasePath.startsWith('/data/'),assessmentCount:selectCount.get().count};
+  return {adapter:'sqlite',databasePath,persistentVolumeExpected:databasePath.startsWith('/data/'),assessmentCount:selectCount.get().count,actionCount:selectActions.all().length};
 }
 function close() { db.close(); }
-module.exports = { seedAssessments, listAssessments, createAssessment, storageInfo, close };
+module.exports = { seedAssessments, listAssessments, createAssessment, listActions, createAction, updateAction, storageInfo, close };

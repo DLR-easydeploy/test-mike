@@ -1,38 +1,28 @@
-# Enterprise Services Portfolio
+# Enterprise Services Portfolio Command Center
 
-Complete EasyDeploy application with a normalized portfolio dataset, assessment workspace, and SQLite-backed assessment history.
+Features:
+- Management Command Center and attention view
+- Domain comparison
+- Domain → Service → Offering heatmap
+- Portfolio Health
+- Assessment Workspace and history
+- SQLite-backed assessments
+- Persistent Action Register with status updates
+- Offering/product drill-through
+- Data-quality controls
+- Full JSON portfolio backup
 
-## Replace the existing project
+Local run:
 
-Copy these files into the root of `test-mike`, replacing matching files:
+    npm install
+    PORT=3000 DATABASE_PATH=./data/portfolio.db npm start
 
-- `Dockerfile`
-- `package.json`
-- `package-lock.json`
-- `.dockerignore`
-- `src/index.js`
-- `src/data/model.js`
-- `src/data/portfolio.js`
-- `src/data/store.js`
+Useful endpoints:
+- /healthz
+- /api/summary
+- /api/storage
+- /api/actions
+- /api/export/assessments
+- /api/export/portfolio
 
-Keep the existing `easydeploy.yaml` unchanged.
-
-## Local run
-
-```bash
-npm install
-PORT=3000 DATABASE_PATH=./data/portfolio.db npm start
-```
-
-Useful checks:
-
-- `/healthz`
-- `/api/summary`
-- `/api/storage`
-- `/api/export/assessments`
-
-## Persistence
-
-SQLite is stored at `DATABASE_PATH`. The Dockerfile defaults to `/data/portfolio.db`.
-
-Local assessment data survives app restarts. In EasyDeploy, `/data` must be backed by platform-provided persistent storage; otherwise the database survives only for the life of the container. The export endpoint provides a JSON backup while durable storage is being arranged.
+The Docker image writes SQLite to /data/portfolio.db. Durable EasyDeploy persistence requires /data to be mounted to persistent platform storage. Keep easydeploy.yaml unchanged unless the EasyDeploy platform team supplies an approved persistence configuration.

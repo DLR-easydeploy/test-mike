@@ -1,0 +1,21 @@
+COMPLETE REPLACEMENT PACKAGE
+
+Repository path:
+/Users/mwolfe@digitalrealty.com/Projects/test-mike
+
+1. Unzip the package in Downloads.
+2. Copy all package contents into the repository:
+   cp -R ~/Downloads/enterprise_services_portfolio_command_center/. /Users/mwolfe@digitalrealty.com/Projects/test-mike/
+3. Keep the existing easydeploy.yaml unchanged.
+4. Install and run:
+   cd /Users/mwolfe@digitalrealty.com/Projects/test-mike
+   npm install
+   PORT=3000 DATABASE_PATH=./data/portfolio.db npm start
+5. Verify:
+   curl -s http://localhost:3000/healthz
+   curl -s http://localhost:3000/api/storage
+6. Test Command Center, Heatmap, Compare Domains, Assessment Workspace, and Action Register.
+7. Stop with Control+C and push:
+   git add -A
+   git commit -m "feat: add portfolio command center and action register"
+   git push origin main
