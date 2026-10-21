@@ -1,23 +1,27 @@
-LARGE CHUNK: SQLITE MASTER DATA + PORTFOLIO ADMIN
+HYBRID PORTFOLIO + GOVERNANCE RELEASE
 
-Repository:
+This release restores the intuitive portfolio navigation while retaining governance, decisions, actions, persistence, administration, and backup.
+
+Target repository:
 /Users/mwolfe@digitalrealty.com/Projects/test-mike
 
-1. Unzip the package in Downloads.
-2. Copy all contents into the repository:
-   cp -R ~/Downloads/enterprise_services_portfolio_admin/. "/Users/mwolfe@digitalrealty.com/Projects/test-mike/"
-3. Keep the existing easydeploy.yaml unchanged.
-4. Install and run:
-   cd "/Users/mwolfe@digitalrealty.com/Projects/test-mike"
-   npm install
-   PORT=3000 DATABASE_PATH=./data/portfolio.db npm start
-5. Verify:
-   curl -s http://localhost:3000/healthz
-   curl -s http://localhost:3000/api/storage
-6. Open Portfolio Admin and test one create/edit/archive cycle using a temporary record.
-7. Stop with Control+C and push:
-   git add -A
-   git commit -m "feat: add persistent portfolio administration"
-   git push origin main
+FAST INSTALL
+1. Unzip enterprise_services_portfolio_hybrid.zip in Downloads.
+2. Run:
+   ~/Downloads/enterprise_services_portfolio_hybrid/scripts/install.sh
+3. Start:
+   /Users/mwolfe@digitalrealty.com/Projects/test-mike/scripts/start-local.sh
+4. In a second terminal, test:
+   /Users/mwolfe@digitalrealty.com/Projects/test-mike/scripts/test-local.sh
+5. Open http://localhost:3000
+6. Stop the server with Control+C.
+7. Push:
+   /Users/mwolfe@digitalrealty.com/Projects/test-mike/scripts/push-main.sh
 
-The existing SQLite database is upgraded in place. Existing assessment and action data is retained.
+MANUAL INSTALL
+cp -R ~/Downloads/enterprise_services_portfolio_hybrid/. "/Users/mwolfe@digitalrealty.com/Projects/test-mike/"
+cd "/Users/mwolfe@digitalrealty.com/Projects/test-mike"
+npm install
+PORT=3000 DATABASE_PATH=./data/portfolio.db npm start
+
+The package preserves the existing src/data/portfolio.js, src/data/model.js, data/portfolio.db, and easydeploy.yaml in the repository.

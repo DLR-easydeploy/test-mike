@@ -1,6 +1,5 @@
 .git
 node_modules
-npm-debug.log
+data
 .DS_Store
-data/*.db
-data/*.db-*
+npm-debug.log
