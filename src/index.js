@@ -1,304 +1,11 @@
 const http = require('node:http');
+const { portfolio, validation } = require('./data/portfolio');
 
 const PORT = Number(process.env.PORT || 3000);
+const SERVICE_NAME =
+  process.env.OTEL_SERVICE_NAME || 'test-mike';
 
-/*
- * Enterprise Services Portfolio V1
- *
- * V1 intentionally runs without external dependencies or persistent storage.
- * Once the EasyDeploy path is proven, the data layer can move to a persistent
- * managed database without changing the portfolio hierarchy.
- */
-
-const portfolio = {
-  domains: [
-    {
-      id: 'employee-platforms',
-      name: 'Employee Platforms',
-      description:
-        'Platforms and services supporting the employee lifecycle, HR technology, workforce data, learning, and employee-facing business capabilities.',
-      health: 'yellow',
-      maturity: 'Developing',
-      direction: 'Improve',
-      services: [
-        {
-          name: 'Core HR Platforms',
-          offerings: [
-            {
-              name: 'Core HR Administration',
-              health: 'green',
-              maturity: 'Established',
-              direction: 'Maintain',
-              products: ['Oracle HCM']
-            },
-            {
-              name: 'Employee & Manager Self-Service',
-              health: 'yellow',
-              maturity: 'Developing',
-              direction: 'Improve',
-              products: ['Oracle HCM', 'WalkMe']
-            }
-          ]
-        },
-        {
-          name: 'Talent & Performance',
-          offerings: [
-            {
-              name: 'Performance Management',
-              health: 'yellow',
-              maturity: 'Developing',
-              direction: 'Improve',
-              products: ['Oracle HCM']
-            },
-            {
-              name: 'Learning Management',
-              health: 'yellow',
-              maturity: 'Developing',
-              direction: 'Improve',
-              products: ['Oracle HCM']
-            }
-          ]
-        },
-        {
-          name: 'HR Data & Integration',
-          offerings: [
-            {
-              name: 'HR Integrations',
-              health: 'yellow',
-              maturity: 'Developing',
-              direction: 'Invest',
-              products: ['Oracle Integration Cloud']
-            },
-            {
-              name: 'HR Reporting & Analytics',
-              health: 'yellow',
-              maturity: 'Developing',
-              direction: 'Improve',
-              products: ['Oracle HCM']
-            }
-          ]
-        }
-      ]
-    },
-
-    {
-      id: 'identity-access',
-      name: 'Identity & Access',
-      description:
-        'Identity lifecycle, authentication, authorization, privileged access, and enterprise access governance capabilities.',
-      health: 'yellow',
-      maturity: 'Developing',
-      direction: 'Invest',
-      services: [
-        {
-          name: 'Identity Lifecycle Management',
-          offerings: [
-            {
-              name: 'Identity Provisioning',
-              health: 'yellow',
-              maturity: 'Developing',
-              direction: 'Invest',
-              products: ['Microsoft Entra ID']
-            },
-            {
-              name: 'Access Lifecycle Management',
-              health: 'yellow',
-              maturity: 'Developing',
-              direction: 'Improve',
-              products: ['Microsoft Entra ID']
-            }
-          ]
-        },
-        {
-          name: 'Authentication & Access',
-          offerings: [
-            {
-              name: 'Enterprise Authentication',
-              health: 'green',
-              maturity: 'Established',
-              direction: 'Maintain',
-              products: ['Microsoft Entra ID']
-            },
-            {
-              name: 'Multi-Factor Authentication',
-              health: 'green',
-              maturity: 'Established',
-              direction: 'Maintain',
-              products: ['Microsoft Entra ID']
-            }
-          ]
-        }
-      ]
-    },
-
-    {
-      id: 'end-user-services',
-      name: 'End User Services',
-      description:
-        'Employee workplace technology including endpoint experience, collaboration, productivity, device services, and digital employee experience.',
-      health: 'green',
-      maturity: 'Established',
-      direction: 'Improve',
-      services: [
-        {
-          name: 'Endpoint Services',
-          offerings: [
-            {
-              name: 'Endpoint Management',
-              health: 'green',
-              maturity: 'Established',
-              direction: 'Maintain',
-              products: ['Microsoft Intune']
-            },
-            {
-              name: 'Digital Employee Experience',
-              health: 'yellow',
-              maturity: 'Developing',
-              direction: 'Invest',
-              products: ['Nexthink']
-            }
-          ]
-        },
-        {
-          name: 'Collaboration & Productivity',
-          offerings: [
-            {
-              name: 'Collaboration Services',
-              health: 'green',
-              maturity: 'Established',
-              direction: 'Maintain',
-              products: ['Microsoft Teams']
-            },
-            {
-              name: 'Productivity Services',
-              health: 'green',
-              maturity: 'Established',
-              direction: 'Maintain',
-              products: ['Microsoft 365']
-            }
-          ]
-        }
-      ]
-    },
-
-    {
-      id: 'enterprise-service-management',
-      name: 'Enterprise Service Management',
-      description:
-        'Enterprise service operations, support, service management, configuration, asset management, knowledge, and work management capabilities.',
-      health: 'yellow',
-      maturity: 'Developing',
-      direction: 'Invest',
-      services: [
-        {
-          name: 'IT Service Management',
-          offerings: [
-            {
-              name: 'Incident Management',
-              health: 'green',
-              maturity: 'Established',
-              direction: 'Maintain',
-              products: ['ServiceNow']
-            },
-            {
-              name: 'Request Management',
-              health: 'yellow',
-              maturity: 'Developing',
-              direction: 'Improve',
-              products: ['ServiceNow']
-            },
-            {
-              name: 'Knowledge Management',
-              health: 'yellow',
-              maturity: 'Developing',
-              direction: 'Improve',
-              products: ['ServiceNow']
-            }
-          ]
-        },
-        {
-          name: 'Technology Portfolio Management',
-          offerings: [
-            {
-              name: 'Software Asset Management',
-              health: 'yellow',
-              maturity: 'Developing',
-              direction: 'Invest',
-              products: ['ServiceNow', 'Zylo']
-            },
-            {
-              name: 'Technology Asset Management',
-              health: 'yellow',
-              maturity: 'Developing',
-              direction: 'Improve',
-              products: ['ServiceNow']
-            },
-            {
-              name: 'Configuration Management',
-              health: 'yellow',
-              maturity: 'Developing',
-              direction: 'Invest',
-              products: ['ServiceNow']
-            }
-          ]
-        }
-      ]
-    }
-  ]
-};
-
-function flattenPortfolio() {
-  const services = [];
-  const offerings = [];
-  const products = new Map();
-
-  for (const domain of portfolio.domains) {
-    for (const service of domain.services) {
-      services.push({
-        name: service.name,
-        domain: domain.name,
-        domainId: domain.id,
-        offerings: service.offerings.length
-      });
-
-      for (const offering of service.offerings) {
-        offerings.push({
-          ...offering,
-          service: service.name,
-          domain: domain.name,
-          domainId: domain.id
-        });
-
-        for (const productName of offering.products) {
-          if (!products.has(productName)) {
-            products.set(productName, {
-              name: productName,
-              offerings: [],
-              domains: new Set()
-            });
-          }
-
-          const product = products.get(productName);
-          product.offerings.push(offering.name);
-          product.domains.add(domain.name);
-        }
-      }
-    }
-  }
-
-  return {
-    services,
-    offerings,
-    products: Array.from(products.values()).map(product => ({
-      ...product,
-      domains: Array.from(product.domains)
-    }))
-  };
-}
-
-const flattened = flattenPortfolio();
-
-function json(res, statusCode, data) {
+function sendJson(res, statusCode, data) {
   const body = JSON.stringify(data);
 
   res.writeHead(statusCode, {
@@ -310,555 +17,318 @@ function json(res, statusCode, data) {
   res.end(body);
 }
 
-function healthClass(health) {
-  return `health-${String(health || '').toLowerCase()}`;
+function getLatestAssessments() {
+  const latest = new Map();
+
+  for (const assessment of portfolio.assessments) {
+    if (assessment.entityType !== 'offering') {
+      continue;
+    }
+
+    const current = latest.get(assessment.entityId);
+
+    if (
+      !current ||
+      String(assessment.assessmentDate) >
+        String(current.assessmentDate)
+    ) {
+      latest.set(assessment.entityId, assessment);
+    }
+  }
+
+  return latest;
 }
 
-function badge(value) {
-  const safe = escapeHtml(value);
-  return `<span class="badge">${safe}</span>`;
-}
+function buildViewModel() {
+  const domainById = new Map(
+    portfolio.domains.map(domain => [
+      domain.id,
+      domain
+    ])
+  );
 
-function healthBadge(value) {
-  return `
-    <span class="health-badge ${healthClass(value)}">
-      <span class="health-dot"></span>
-      ${escapeHtml(capitalize(value))}
-    </span>
-  `;
-}
+  const serviceById = new Map(
+    portfolio.services.map(service => [
+      service.id,
+      service
+    ])
+  );
 
-function capitalize(value) {
-  value = String(value || '');
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
+  const offeringById = new Map(
+    portfolio.offerings.map(offering => [
+      offering.id,
+      offering
+    ])
+  );
 
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
-}
+  const productById = new Map(
+    portfolio.products.map(product => [
+      product.id,
+      product
+    ])
+  );
 
-function getSummary() {
-  const green = flattened.offerings.filter(x => x.health === 'green').length;
-  const yellow = flattened.offerings.filter(x => x.health === 'yellow').length;
-  const red = flattened.offerings.filter(x => x.health === 'red').length;
+  const latestAssessmentByOffering =
+    getLatestAssessments();
+
+  const relationshipsByOffering = new Map();
+  const relationshipsByProduct = new Map();
+
+  for (const relationship of portfolio.relationships) {
+    if (
+      !relationshipsByOffering.has(
+        relationship.offeringId
+      )
+    ) {
+      relationshipsByOffering.set(
+        relationship.offeringId,
+        []
+      );
+    }
+
+    if (
+      !relationshipsByProduct.has(
+        relationship.productId
+      )
+    ) {
+      relationshipsByProduct.set(
+        relationship.productId,
+        []
+      );
+    }
+
+    relationshipsByOffering
+      .get(relationship.offeringId)
+      .push(relationship);
+
+    relationshipsByProduct
+      .get(relationship.productId)
+      .push(relationship);
+  }
+
+  const offerings = portfolio.offerings.map(
+    offering => {
+      const service = serviceById.get(
+        offering.serviceId
+      );
+
+      const domain = service
+        ? domainById.get(service.domainId)
+        : null;
+
+      const assessment =
+        latestAssessmentByOffering.get(
+          offering.id
+        ) || null;
+
+      const relationships =
+        relationshipsByOffering.get(
+          offering.id
+        ) || [];
+
+      const products = relationships
+        .map(relationship => {
+          const product = productById.get(
+            relationship.productId
+          );
+
+          if (!product) {
+            return null;
+          }
+
+          return {
+            ...product,
+            relationship
+          };
+        })
+        .filter(Boolean);
+
+      return {
+        ...offering,
+        serviceName:
+          service?.name || 'Unknown Service',
+        domainId: domain?.id || '',
+        domainName:
+          domain?.name || 'Unknown Domain',
+        assessment,
+        products
+      };
+    }
+  );
+
+  const services = portfolio.services.map(
+    service => {
+      const domain = domainById.get(
+        service.domainId
+      );
+
+      const serviceOfferings = offerings.filter(
+        offering =>
+          offering.serviceId === service.id
+      );
+
+      return {
+        ...service,
+        domainName:
+          domain?.name || 'Unknown Domain',
+        offeringCount:
+          serviceOfferings.length,
+        offerings: serviceOfferings
+      };
+    }
+  );
+
+  const domains = portfolio.domains.map(
+    domain => {
+      const domainServices = services.filter(
+        service =>
+          service.domainId === domain.id
+      );
+
+      const domainOfferings =
+        domainServices.flatMap(
+          service => service.offerings
+        );
+
+      return {
+        ...domain,
+        serviceCount: domainServices.length,
+        offeringCount:
+          domainOfferings.length,
+        services: domainServices
+      };
+    }
+  );
+
+  const products = portfolio.products.map(
+    product => {
+      const relationships =
+        relationshipsByProduct.get(
+          product.id
+        ) || [];
+
+      const linkedOfferings = relationships
+        .map(relationship => {
+          const offering = offeringById.get(
+            relationship.offeringId
+          );
+
+          if (!offering) {
+            return null;
+          }
+
+          const service = serviceById.get(
+            offering.serviceId
+          );
+
+          const domain = service
+            ? domainById.get(service.domainId)
+            : null;
+
+          return {
+            ...offering,
+            serviceName:
+              service?.name || 'Unknown Service',
+            domainName:
+              domain?.name || 'Unknown Domain',
+            relationship
+          };
+        })
+        .filter(Boolean);
+
+      return {
+        ...product,
+        relationships,
+        offerings: linkedOfferings
+      };
+    }
+  );
+
+  const coverage = {
+    total: offerings.length,
+
+    validated: offerings.filter(
+      offering =>
+        offering.assessment &&
+        !offering.assessment.syntheticDemo &&
+        offering.assessment.status ===
+          'Validated'
+    ).length,
+
+    synthetic: offerings.filter(
+      offering =>
+        offering.assessment?.syntheticDemo
+    ).length,
+
+    missing: offerings.filter(
+      offering => !offering.assessment
+    ).length,
+
+    needsReview: offerings.filter(
+      offering =>
+        offering.validationStatus ===
+        'Needs Review'
+    ).length
+  };
 
   return {
-    domains: portfolio.domains.length,
-    services: flattened.services.length,
-    offerings: flattened.offerings.length,
-    products: flattened.products.length,
-    green,
-    yellow,
-    red
+    metadata: portfolio.metadata,
+    domains,
+    services,
+    offerings,
+    products,
+    relationships:
+      portfolio.relationships,
+    assessments: portfolio.assessments,
+    actions: portfolio.actions || [],
+    coverage,
+    validation
   };
 }
 
-function renderOverview() {
-  const summary = getSummary();
-
-  const domainCards = portfolio.domains.map(domain => {
-    const offeringCount = domain.services.reduce(
-      (total, service) => total + service.offerings.length,
-      0
-    );
-
-    return `
-      <button class="domain-card" onclick="openDomain('${domain.id}')">
-        <div class="domain-top">
-          ${healthBadge(domain.health)}
-          <span class="arrow">→</span>
-        </div>
-
-        <h3>${escapeHtml(domain.name)}</h3>
-        <p>${escapeHtml(domain.description)}</p>
-
-        <div class="domain-stats">
-          <div>
-            <strong>${domain.services.length}</strong>
-            <span>Services</span>
-          </div>
-          <div>
-            <strong>${offeringCount}</strong>
-            <span>Offerings</span>
-          </div>
-        </div>
-
-        <div class="domain-meta">
-          ${badge(domain.maturity)}
-          ${badge(domain.direction)}
-        </div>
-      </button>
-    `;
-  }).join('');
-
-  const attention = flattened.offerings
-    .filter(x => x.health !== 'green' || ['Invest', 'Improve', 'Consolidate', 'Retire'].includes(x.direction))
-    .slice(0, 8)
-    .map(offering => `
-      <tr>
-        <td>
-          <button class="text-link" onclick="openDomain('${offering.domainId}')">
-            ${escapeHtml(offering.name)}
-          </button>
-          <div class="subtle">${escapeHtml(offering.service)}</div>
-        </td>
-        <td>${escapeHtml(offering.domain)}</td>
-        <td>${healthBadge(offering.health)}</td>
-        <td>${badge(offering.maturity)}</td>
-        <td>${badge(offering.direction)}</td>
-      </tr>
-    `).join('');
-
-  return `
-    <section class="hero">
-      <div>
-        <div class="eyebrow">ENTERPRISE SERVICES PLATFORMS</div>
-        <h1>Portfolio Overview</h1>
-        <p class="hero-copy">
-          A management view of the capabilities we provide, the technology
-          enabling them, and where investment or improvement is needed.
-        </p>
-      </div>
-      <div class="as-of">
-        <span>V1 Prototype</span>
-        <strong>Enterprise Services Portfolio</strong>
-      </div>
-    </section>
-
-    <section class="metric-grid">
-      ${metricCard(summary.domains, 'Domains', 'Capability pillars')}
-      ${metricCard(summary.services, 'Services', 'Managed capabilities')}
-      ${metricCard(summary.offerings, 'Offerings', 'Consumer outcomes')}
-      ${metricCard(summary.products, 'Products & Systems', 'Technology enablers')}
-    </section>
-
-    <section>
-      <div class="section-heading">
-        <div>
-          <div class="eyebrow">PORTFOLIO STRUCTURE</div>
-          <h2>Domains</h2>
-        </div>
-      </div>
-
-      <div class="domain-grid">
-        ${domainCards}
-      </div>
-    </section>
-
-    <section class="two-column">
-      <div class="panel">
-        <div class="section-heading compact">
-          <div>
-            <div class="eyebrow">PORTFOLIO HEALTH</div>
-            <h2>Offering health</h2>
-          </div>
-        </div>
-
-        <div class="health-summary">
-          ${healthSummaryRow('Healthy', summary.green, summary.offerings, 'green')}
-          ${healthSummaryRow('Needs attention', summary.yellow, summary.offerings, 'yellow')}
-          ${healthSummaryRow('At risk', summary.red, summary.offerings, 'red')}
-        </div>
-
-        <div class="health-note">
-          Health is assessed at the service offering level so leadership can
-          see where the actual business capability requires attention.
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="section-heading compact">
-          <div>
-            <div class="eyebrow">HOW IT WORKS</div>
-            <h2>Portfolio logic</h2>
-          </div>
-        </div>
-
-        <div class="flow">
-          <div class="flow-node">
-            <span>01</span>
-            <strong>Domain</strong>
-            <small>Strategic capability</small>
-          </div>
-          <div class="flow-arrow">→</div>
-          <div class="flow-node">
-            <span>02</span>
-            <strong>Service</strong>
-            <small>What we manage</small>
-          </div>
-          <div class="flow-arrow">→</div>
-          <div class="flow-node">
-            <span>03</span>
-            <strong>Offering</strong>
-            <small>What users receive</small>
-          </div>
-          <div class="flow-arrow">→</div>
-          <div class="flow-node">
-            <span>04</span>
-            <strong>Technology</strong>
-            <small>What enables it</small>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel table-panel">
-      <div class="section-heading compact">
-        <div>
-          <div class="eyebrow">MANAGEMENT ATTENTION</div>
-          <h2>Offerings to watch</h2>
-        </div>
-        <button class="secondary-button" onclick="showPage('offerings')">
-          View all offerings
-        </button>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Offering</th>
-              <th>Domain</th>
-              <th>Health</th>
-              <th>Maturity</th>
-              <th>Direction</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${attention}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  `;
-}
-
-function metricCard(number, label, description) {
-  return `
-    <div class="metric-card">
-      <div class="metric-number">${number}</div>
-      <div class="metric-label">${escapeHtml(label)}</div>
-      <div class="metric-description">${escapeHtml(description)}</div>
-    </div>
-  `;
-}
-
-function healthSummaryRow(label, count, total, color) {
-  const percentage = total ? Math.round((count / total) * 100) : 0;
-
-  return `
-    <div class="health-row">
-      <div class="health-row-label">
-        <span class="health-dot health-${color}"></span>
-        <span>${escapeHtml(label)}</span>
-      </div>
-      <div class="health-bar">
-        <div class="health-fill health-${color}" style="width:${percentage}%"></div>
-      </div>
-      <strong>${count}</strong>
-    </div>
-  `;
-}
-
-function renderServices() {
-  const rows = flattened.services.map(service => `
-    <tr>
-      <td>
-        <strong>${escapeHtml(service.name)}</strong>
-      </td>
-      <td>
-        <button class="text-link" onclick="openDomain('${service.domainId}')">
-          ${escapeHtml(service.domain)}
-        </button>
-      </td>
-      <td>${service.offerings}</td>
-      <td>
-        <button class="view-button" onclick="openDomain('${service.domainId}')">
-          Explore
-        </button>
-      </td>
-    </tr>
-  `).join('');
-
-  return renderListPage(
-    'Services',
-    'The managed capabilities delivered through Enterprise Services Platforms.',
-    ['Service', 'Domain', 'Offerings', ''],
-    rows
-  );
-}
-
-function renderOfferings() {
-  const rows = flattened.offerings.map(offering => `
-    <tr>
-      <td>
-        <strong>${escapeHtml(offering.name)}</strong>
-        <div class="subtle">${escapeHtml(offering.service)}</div>
-      </td>
-      <td>${escapeHtml(offering.domain)}</td>
-      <td>${healthBadge(offering.health)}</td>
-      <td>${badge(offering.maturity)}</td>
-      <td>${badge(offering.direction)}</td>
-      <td>${escapeHtml(offering.products.join(', '))}</td>
-    </tr>
-  `).join('');
-
-  return renderListPage(
-    'Service Offerings',
-    'The discrete capabilities and outcomes consumed by employees and business teams.',
-    ['Offering', 'Domain', 'Health', 'Maturity', 'Direction', 'Products / Systems'],
-    rows
-  );
-}
-
-function renderProducts() {
-  const rows = flattened.products.map(product => `
-    <tr>
-      <td><strong>${escapeHtml(product.name)}</strong></td>
-      <td>${escapeHtml(product.domains.join(', '))}</td>
-      <td>${product.offerings.length}</td>
-      <td>${escapeHtml(product.offerings.join(', '))}</td>
-    </tr>
-  `).join('');
-
-  return renderListPage(
-    'Products & Systems',
-    'The technology platforms and applications enabling portfolio offerings.',
-    ['Product / System', 'Domains', 'Offering Count', 'Enabled Offerings'],
-    rows
-  );
-}
-
-function renderAssessments() {
-  return `
-    <section class="hero">
-      <div>
-        <div class="eyebrow">PORTFOLIO MANAGEMENT</div>
-        <h1>Assessments</h1>
-        <p class="hero-copy">
-          Capture point-in-time health, maturity, and strategic direction for
-          each service offering.
-        </p>
-      </div>
-    </section>
-
-    <section class="assessment-grid">
-      <div class="panel assessment-callout">
-        <span class="big-number">01</span>
-        <h3>Health</h3>
-        <p>
-          Is the offering delivering the outcome we expect today?
-        </p>
-        <div class="assessment-options">
-          ${healthBadge('green')}
-          ${healthBadge('yellow')}
-          ${healthBadge('red')}
-        </div>
-      </div>
-
-      <div class="panel assessment-callout">
-        <span class="big-number">02</span>
-        <h3>Maturity</h3>
-        <p>
-          How mature is the capability, operating model, and experience?
-        </p>
-        <div class="assessment-options">
-          ${badge('Emerging')}
-          ${badge('Developing')}
-          ${badge('Established')}
-          ${badge('Leading')}
-        </div>
-      </div>
-
-      <div class="panel assessment-callout">
-        <span class="big-number">03</span>
-        <h3>Direction</h3>
-        <p>
-          What should we do with the capability next?
-        </p>
-        <div class="assessment-options">
-          ${badge('Invest')}
-          ${badge('Improve')}
-          ${badge('Maintain')}
-          ${badge('Consolidate')}
-          ${badge('Retire')}
-        </div>
-      </div>
-    </section>
-
-    <section class="panel empty-state">
-      <div class="empty-icon">+</div>
-      <h2>Assessment workflow comes next</h2>
-      <p>
-        V1 will preserve assessment history instead of overwriting the latest
-        score, allowing health and maturity to be viewed as trends over time.
-      </p>
-      <span class="prototype-label">Prototype placeholder</span>
-    </section>
-  `;
-}
-
-function renderListPage(title, description, headers, rows) {
-  return `
-    <section class="hero">
-      <div>
-        <div class="eyebrow">PORTFOLIO INVENTORY</div>
-        <h1>${escapeHtml(title)}</h1>
-        <p class="hero-copy">${escapeHtml(description)}</p>
-      </div>
-    </section>
-
-    <section class="panel table-panel">
-      <div class="list-toolbar">
-        <div class="search-box">
-          <span>⌕</span>
-          <input
-            type="search"
-            placeholder="Filter ${escapeHtml(title.toLowerCase())}..."
-            oninput="filterTable(this.value)"
-          />
-        </div>
-        <span class="record-count">${countRows(rows)} records</span>
-      </div>
-
-      <div class="table-wrap">
-        <table id="portfolio-table">
-          <thead>
-            <tr>
-              ${headers.map(header => `<th>${escapeHtml(header)}</th>`).join('')}
-            </tr>
-          </thead>
-          <tbody>
-            ${rows}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  `;
-}
-
-function countRows(rows) {
-  return (rows.match(/<tr>/g) || []).length;
-}
-
-function renderDomainDetails() {
-  return portfolio.domains.map(domain => {
-    const services = domain.services.map(service => {
-      const offerings = service.offerings.map(offering => `
-        <div class="offering-card">
-          <div class="offering-head">
-            <div>
-              <div class="eyebrow">SERVICE OFFERING</div>
-              <h4>${escapeHtml(offering.name)}</h4>
-            </div>
-            ${healthBadge(offering.health)}
-          </div>
-
-          <div class="offering-meta">
-            <div>
-              <span>Maturity</span>
-              <strong>${escapeHtml(offering.maturity)}</strong>
-            </div>
-            <div>
-              <span>Direction</span>
-              <strong>${escapeHtml(offering.direction)}</strong>
-            </div>
-          </div>
-
-          <div class="product-list">
-            <span>Enabled by</span>
-            ${offering.products.map(product => badge(product)).join('')}
-          </div>
-        </div>
-      `).join('');
-
-      return `
-        <div class="service-section">
-          <div class="service-title">
-            <div>
-              <div class="eyebrow">SERVICE</div>
-              <h3>${escapeHtml(service.name)}</h3>
-            </div>
-            <span>${service.offerings.length} offerings</span>
-          </div>
-
-          <div class="offering-grid">
-            ${offerings}
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    return `
-      <section class="domain-detail" id="domain-${domain.id}">
-        <button class="back-button" onclick="closeDomain()">← Portfolio Overview</button>
-
-        <div class="domain-hero">
-          <div>
-            <div class="eyebrow">STRATEGIC DOMAIN</div>
-            <h1>${escapeHtml(domain.name)}</h1>
-            <p>${escapeHtml(domain.description)}</p>
-          </div>
-
-          <div class="domain-scorecard">
-            <div>
-              <span>Health</span>
-              ${healthBadge(domain.health)}
-            </div>
-            <div>
-              <span>Maturity</span>
-              <strong>${escapeHtml(domain.maturity)}</strong>
-            </div>
-            <div>
-              <span>Direction</span>
-              <strong>${escapeHtml(domain.direction)}</strong>
-            </div>
-          </div>
-        </div>
-
-        ${services}
-      </section>
-    `;
-  }).join('');
-}
-
-const HTML = `<!DOCTYPE html>
+const HTML = String.raw`<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Enterprise Services Portfolio</title>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>
+    Enterprise Services Portfolio
+  </title>
 
   <style>
     :root {
       --navy: #071d3b;
-      --navy-2: #0b2b52;
-      --blue: #165dcc;
-      --blue-hover: #0d4da9;
-      --blue-light: #eaf2ff;
+      --navy-light: #0b2b52;
+      --blue: #1456e0;
+      --blue-dark: #0d47b5;
+      --blue-light: #e9f1ff;
 
-      --bg: #f4f6f9;
+      --background: #f4f7fb;
       --panel: #ffffff;
-      --border: #dfe5ec;
+      --border: #dce4ee;
 
       --text: #10243e;
-      --muted: #65758a;
+      --muted: #68788c;
 
-      --green: #198754;
+      --green: #188657;
       --green-light: #e8f6ef;
 
-      --yellow: #d89b0d;
-      --yellow-light: #fff6dc;
+      --yellow: #a96f00;
+      --yellow-light: #fff3cf;
 
-      --red: #c83d4d;
-      --red-light: #fcecef;
+      --red: #c33d4d;
+      --red-light: #fcebed;
 
-      --shadow: 0 5px 18px rgba(15, 35, 60, 0.06);
+      --purple: #7147c7;
+      --purple-light: #f0eafd;
+
+      --shadow:
+        0 6px 22px rgba(13, 35, 64, 0.07);
     }
 
     * {
@@ -867,11 +337,10 @@ const HTML = `<!DOCTYPE html>
 
     body {
       margin: 0;
-      background: var(--bg);
+      background: var(--background);
       color: var(--text);
       font-family:
         Inter,
-        ui-sans-serif,
         -apple-system,
         BlinkMacSystemFont,
         "Segoe UI",
@@ -879,7 +348,8 @@ const HTML = `<!DOCTYPE html>
     }
 
     button,
-    input {
+    input,
+    select {
       font: inherit;
     }
 
@@ -887,1084 +357,2777 @@ const HTML = `<!DOCTYPE html>
       cursor: pointer;
     }
 
-    .shell {
-      display: flex;
+    .app {
       min-height: 100vh;
     }
 
     .sidebar {
       position: fixed;
       inset: 0 auto 0 0;
-      width: 265px;
+      width: 270px;
       background:
-        linear-gradient(180deg, #071d3b 0%, #082542 100%);
+        linear-gradient(
+          180deg,
+          var(--navy),
+          #082742
+        );
       color: white;
       display: flex;
       flex-direction: column;
-      z-index: 100;
+      z-index: 10;
     }
 
     .brand {
-      padding: 28px 24px 24px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 28px 24px 23px;
+      border-bottom:
+        1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .brand-line {
+      display: flex;
+      gap: 11px;
+      align-items: center;
+      font-weight: 800;
+      letter-spacing: 0.06em;
     }
 
     .brand-mark {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    .brand-blocks {
       display: grid;
-      grid-template-columns: repeat(2, 8px);
+      grid-template-columns:
+        repeat(2, 8px);
       gap: 3px;
     }
 
-    .brand-blocks span {
+    .brand-mark span {
       width: 8px;
       height: 8px;
-      background: #3d84eb;
-    }
-
-    .brand-name {
-      font-weight: 700;
-      letter-spacing: 0.04em;
+      background: #4b8df0;
     }
 
     .product-name {
-      color: rgba(255,255,255,.63);
+      margin-top: 16px;
+      color: rgba(255, 255, 255, 0.66);
       font-size: 12px;
       line-height: 1.5;
     }
 
-    nav {
-      padding: 22px 14px;
+    .navigation {
+      padding: 20px 13px;
       flex: 1;
     }
 
-    .nav-label {
-      padding: 0 12px 9px;
+    .navigation-label {
+      padding: 0 12px 8px;
+      color: rgba(255, 255, 255, 0.38);
       font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .12em;
-      color: rgba(255,255,255,.38);
+      font-weight: 800;
+      letter-spacing: 0.12em;
     }
 
-    .nav-button {
-      appearance: none;
+    .navigation button {
       width: 100%;
       border: 0;
       background: transparent;
-      color: rgba(255,255,255,.72);
+      color: rgba(255, 255, 255, 0.72);
+      text-align: left;
       padding: 11px 12px;
       border-radius: 7px;
-      text-align: left;
-      margin-bottom: 4px;
+      margin: 2px 0;
       display: flex;
-      align-items: center;
-      gap: 11px;
+      gap: 10px;
     }
 
-    .nav-button:hover {
-      background: rgba(255,255,255,.07);
+    .navigation button:hover,
+    .navigation button.active {
+      background: var(--blue);
       color: white;
-    }
-
-    .nav-button.active {
-      background: #165dcc;
-      color: white;
-    }
-
-    .nav-icon {
-      display: inline-grid;
-      place-items: center;
-      width: 22px;
-      font-size: 16px;
     }
 
     .sidebar-footer {
-      padding: 20px 24px;
-      border-top: 1px solid rgba(255,255,255,.1);
+      padding: 19px 24px;
+      border-top:
+        1px solid rgba(255, 255, 255, 0.1);
       font-size: 11px;
-      color: rgba(255,255,255,.45);
+      color: rgba(255, 255, 255, 0.48);
     }
 
-    .content-shell {
-      width: calc(100% - 265px);
-      margin-left: 265px;
+    .main {
+      margin-left: 270px;
     }
 
     .topbar {
-      min-height: 66px;
-      padding: 0 36px;
+      height: 66px;
       background: white;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      padding: 0 35px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
     }
 
-    .topbar-title {
-      font-size: 13px;
+    .breadcrumb {
+      font-size: 12px;
       color: var(--muted);
     }
 
     .environment {
-      background: #e9f7ef;
-      color: #18794e;
-      border: 1px solid #bfe6d0;
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--green);
+      background: var(--green-light);
       border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
       padding: 5px 10px;
     }
 
-    main {
+    .content {
       max-width: 1600px;
-      margin: 0 auto;
-      padding: 44px 42px 80px;
+      margin: auto;
+      padding: 40px 40px 80px;
     }
 
     .eyebrow {
-      color: var(--blue);
       font-size: 10px;
-      letter-spacing: .14em;
-      font-weight: 800;
-      margin-bottom: 8px;
+      letter-spacing: 0.13em;
+      font-weight: 850;
+      color: var(--blue);
+      margin-bottom: 7px;
     }
 
     .hero {
       display: flex;
       justify-content: space-between;
-      gap: 30px;
-      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      letter-spacing: -0.035em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 780px;
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    .notice {
+      background: var(--yellow-light);
+      color: #795400;
+      border: 1px solid #efd78c;
+      padding: 10px 13px;
+      border-radius: 7px;
+      font-size: 11px;
+      max-width: 340px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns:
+        repeat(5, 1fr);
+      gap: 13px;
       margin-bottom: 34px;
     }
 
-    h1,
-    h2,
-    h3,
-    h4,
-    p {
-      margin-top: 0;
-    }
-
-    h1 {
-      margin-bottom: 9px;
-      font-size: 33px;
-      letter-spacing: -.035em;
-    }
-
-    h2 {
-      margin-bottom: 0;
-      font-size: 21px;
-      letter-spacing: -.02em;
-    }
-
-    h3 {
-      letter-spacing: -.015em;
-    }
-
-    .hero-copy {
-      max-width: 720px;
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.65;
-    }
-
-    .as-of {
-      padding: 13px 16px;
-      border: 1px solid var(--border);
-      background: white;
-      border-radius: 8px;
-      font-size: 11px;
-    }
-
-    .as-of span,
-    .as-of strong {
-      display: block;
-    }
-
-    .as-of span {
-      color: var(--muted);
-      margin-bottom: 3px;
-    }
-
-    .metric-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-bottom: 42px;
-    }
-
-    .metric-card,
+    .card,
     .panel {
       background: var(--panel);
       border: 1px solid var(--border);
       box-shadow: var(--shadow);
+      border-radius: 9px;
     }
 
-    .metric-card {
-      padding: 20px;
-      border-radius: 8px;
+    .metric {
+      padding: 19px;
     }
 
-    .metric-number {
-      font-size: 31px;
+    .metric strong {
+      display: block;
+      font-size: 28px;
+      overflow-wrap: anywhere;
+    }
+
+    .metric span {
+      display: block;
+      font-size: 12px;
       font-weight: 750;
-      line-height: 1.1;
+      margin-top: 7px;
     }
 
-    .metric-label {
-      font-size: 13px;
-      font-weight: 700;
-      margin-top: 8px;
-    }
-
-    .metric-description {
+    .metric small {
       color: var(--muted);
-      font-size: 11px;
-      margin-top: 3px;
+      font-size: 10px;
     }
 
     .section-heading {
       display: flex;
+      align-items: end;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 17px;
+      margin: 30px 0 14px;
     }
 
-    .section-heading.compact {
-      margin-bottom: 24px;
-    }
-
-    section + section {
-      margin-top: 38px;
+    .section-heading h2 {
+      margin: 0;
+      font-size: 20px;
     }
 
     .domain-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
+      grid-template-columns:
+        repeat(4, 1fr);
+      gap: 13px;
     }
 
     .domain-card {
-      border: 1px solid var(--border);
-      border-top: 3px solid var(--blue);
-      border-radius: 8px;
-      background: white;
-      padding: 20px;
+      padding: 19px;
+      border-top:
+        3px solid var(--blue);
       text-align: left;
       color: inherit;
-      box-shadow: var(--shadow);
-      transition: transform .15s ease, box-shadow .15s ease;
     }
 
     .domain-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 9px 24px rgba(15,35,60,.09);
     }
 
     .domain-card h3 {
-      font-size: 17px;
-      margin: 19px 0 8px;
+      font-size: 16px;
+      margin: 15px 0 7px;
     }
 
     .domain-card p {
+      font-size: 11px;
       color: var(--muted);
-      font-size: 12px;
       line-height: 1.55;
-      min-height: 75px;
+      min-height: 70px;
     }
 
-    .domain-top {
+    .counts {
       display: flex;
-      justify-content: space-between;
-    }
-
-    .arrow {
-      color: var(--blue);
-      font-size: 19px;
-    }
-
-    .domain-stats {
+      gap: 26px;
+      padding: 12px 0;
       border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      margin: 18px 0;
-      padding: 13px 0;
-      display: flex;
-      gap: 34px;
+      border-bottom:
+        1px solid var(--border);
     }
 
-    .domain-stats strong,
-    .domain-stats span {
+    .counts strong,
+    .counts small {
       display: block;
     }
 
-    .domain-stats strong {
-      font-size: 18px;
-    }
-
-    .domain-stats span {
+    .counts small {
+      font-size: 9px;
       color: var(--muted);
-      font-size: 10px;
-      margin-top: 2px;
     }
 
-    .domain-meta,
-    .assessment-options {
+    .tag-list {
       display: flex;
+      gap: 5px;
       flex-wrap: wrap;
-      gap: 6px;
+      margin-top: 13px;
+    }
+
+    .tag {
+      display: inline-flex;
+      padding: 4px 7px;
+      border-radius: 4px;
+      background: #edf2f7;
+      color: #475b73;
+      font-size: 9px;
+      font-weight: 750;
     }
 
     .badge {
       display: inline-flex;
+      gap: 5px;
       align-items: center;
-      border-radius: 4px;
-      background: #eef2f7;
-      color: #425570;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 4px 7px;
-    }
-
-    .health-badge {
-      display: inline-flex;
-      width: fit-content;
-      align-items: center;
-      gap: 6px;
-      font-size: 10px;
-      font-weight: 750;
-      border-radius: 20px;
       padding: 4px 8px;
+      border-radius: 20px;
+      font-size: 9px;
+      font-weight: 800;
     }
 
-    .health-badge.health-green {
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+
+    .green {
       background: var(--green-light);
       color: var(--green);
     }
 
-    .health-badge.health-yellow {
-      background: var(--yellow-light);
-      color: #956600;
+    .green .dot {
+      background: var(--green);
     }
 
-    .health-badge.health-red {
+    .yellow {
+      background: var(--yellow-light);
+      color: var(--yellow);
+    }
+
+    .yellow .dot {
+      background: #d99a12;
+    }
+
+    .red {
       background: var(--red-light);
       color: var(--red);
     }
 
-    .health-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    .health-dot.health-green,
-    .health-badge.health-green .health-dot,
-    .health-fill.health-green {
-      background: var(--green);
-    }
-
-    .health-dot.health-yellow,
-    .health-badge.health-yellow .health-dot,
-    .health-fill.health-yellow {
-      background: var(--yellow);
-    }
-
-    .health-dot.health-red,
-    .health-badge.health-red .health-dot,
-    .health-fill.health-red {
+    .red .dot {
       background: var(--red);
     }
 
-    .two-column {
+    .unknown {
+      background: #edf2f7;
+      color: #65758a;
+    }
+
+    .unknown .dot {
+      background: #8090a3;
+    }
+
+    .synthetic {
+      background: var(--purple-light);
+      color: var(--purple);
+      margin-right: 4px;
+    }
+
+    .coverage-grid {
       display: grid;
-      grid-template-columns: .85fr 1.15fr;
-      gap: 16px;
+      grid-template-columns:
+        repeat(4, 1fr);
+      gap: 12px;
     }
 
-    .panel {
-      border-radius: 8px;
-      padding: 25px;
+    .coverage-card {
+      padding: 18px;
     }
 
-    .health-row {
-      display: grid;
-      grid-template-columns: 125px 1fr 26px;
-      gap: 14px;
-      align-items: center;
-      margin-bottom: 16px;
-      font-size: 11px;
-    }
-
-    .health-row-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .health-bar {
-      height: 7px;
-      background: #eef1f5;
-      border-radius: 5px;
-      overflow: hidden;
-    }
-
-    .health-fill {
-      height: 100%;
-      border-radius: 5px;
-    }
-
-    .health-note {
-      padding-top: 15px;
-      border-top: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.5;
-    }
-
-    .flow {
-      display: flex;
-      align-items: stretch;
-    }
-
-    .flow-node {
-      flex: 1;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 14px 11px;
-    }
-
-    .flow-node span,
-    .flow-node strong,
-    .flow-node small {
+    .coverage-card strong {
       display: block;
+      font-size: 25px;
     }
 
-    .flow-node span {
-      color: var(--blue);
-      font-size: 9px;
-      margin-bottom: 7px;
-      font-weight: 800;
-    }
-
-    .flow-node strong {
-      font-size: 12px;
-    }
-
-    .flow-node small {
+    .coverage-card span {
+      font-size: 10px;
       color: var(--muted);
-      font-size: 9px;
-      margin-top: 4px;
     }
 
-    .flow-arrow {
-      display: grid;
-      place-items: center;
-      color: #8da0b4;
-      padding: 0 6px;
+    .toolbar {
+      padding: 17px 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .search,
+    select {
+      border: 1px solid var(--border);
+      background: #fbfcfe;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 11px;
+      color: var(--text);
+    }
+
+    .search {
+      min-width: 300px;
+    }
+
+    .visible-count {
+      font-size: 10px;
+      color: var(--muted);
     }
 
     .table-panel {
-      padding: 0;
       overflow: hidden;
     }
 
-    .table-panel > .section-heading {
-      padding: 25px 25px 0;
-    }
-
     .table-wrap {
-      overflow-x: auto;
+      overflow: auto;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 12px;
+      font-size: 11px;
     }
 
     th {
-      color: var(--muted);
-      font-size: 9px;
-      letter-spacing: .08em;
-      text-transform: uppercase;
       text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 9px;
+      color: var(--muted);
       background: #f8fafc;
-      padding: 10px 16px;
+      padding: 10px 14px;
       border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
+      border-bottom:
+        1px solid var(--border);
     }
 
     td {
-      padding: 14px 16px;
-      border-bottom: 1px solid #edf0f4;
-      vertical-align: middle;
+      padding: 13px 14px;
+      border-bottom:
+        1px solid #edf1f5;
+      vertical-align: top;
     }
 
-    tbody tr:hover {
+    tr:hover td {
       background: #fbfcfe;
     }
 
-    tbody tr:last-child td {
-      border-bottom: 0;
-    }
-
-    .subtle {
-      color: var(--muted);
-      font-size: 10px;
-      margin-top: 3px;
-    }
-
-    .text-link {
-      background: none;
+    .link-button {
       border: 0;
+      background: transparent;
       color: var(--blue);
+      font-weight: 750;
       padding: 0;
       text-align: left;
-      font-weight: 700;
     }
 
-    .secondary-button,
-    .view-button,
+    .secondary-text {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+
+    .two-column {
+      display: grid;
+      grid-template-columns:
+        1fr 1fr;
+      gap: 13px;
+    }
+
+    .quality-panel {
+      padding: 20px;
+    }
+
+    .quality-panel h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .quality-panel ul {
+      margin: 8px 0 0;
+      padding-left: 19px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    .chart-row {
+      display: grid;
+      grid-template-columns:
+        120px 1fr 28px;
+      gap: 10px;
+      align-items: center;
+      margin: 12px 0;
+      font-size: 10px;
+    }
+
+    .bar {
+      height: 8px;
+      background: #edf1f5;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--blue);
+    }
+
+    .detail-navigation {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
     .back-button {
       border: 1px solid var(--border);
       background: white;
-      color: var(--text);
       border-radius: 6px;
-      padding: 7px 11px;
-      font-size: 11px;
-      font-weight: 650;
-    }
-
-    .secondary-button:hover,
-    .view-button:hover,
-    .back-button:hover {
-      border-color: var(--blue);
-      color: var(--blue);
-    }
-
-    .list-toolbar {
-      padding: 20px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .search-box {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: min(420px, 70%);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0 11px;
-      background: #fbfcfd;
-    }
-
-    .search-box input {
-      border: 0;
-      outline: 0;
-      background: transparent;
-      padding: 9px 0;
-      width: 100%;
-      color: var(--text);
-    }
-
-    .record-count {
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .assessment-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-    }
-
-    .assessment-callout {
-      min-height: 220px;
-    }
-
-    .big-number {
-      display: block;
-      color: var(--blue);
-      font-size: 11px;
-      font-weight: 800;
-      margin-bottom: 26px;
-    }
-
-    .assessment-callout h3 {
-      margin-bottom: 7px;
-    }
-
-    .assessment-callout p {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.55;
-      min-height: 52px;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 52px 30px;
-    }
-
-    .empty-state p {
-      max-width: 620px;
-      margin: 10px auto 20px;
-      color: var(--muted);
-      line-height: 1.6;
-      font-size: 13px;
-    }
-
-    .empty-icon {
-      margin: 0 auto 17px;
-      width: 42px;
-      height: 42px;
-      border: 1px dashed var(--blue);
-      display: grid;
-      place-items: center;
-      color: var(--blue);
-      border-radius: 50%;
-      font-size: 23px;
-    }
-
-    .prototype-label {
-      color: var(--blue);
-      background: var(--blue-light);
-      border-radius: 20px;
-      padding: 5px 10px;
+      padding: 7px 10px;
       font-size: 10px;
-      font-weight: 700;
     }
 
-    .domain-detail {
-      display: none;
-    }
-
-    .domain-detail.active {
-      display: block;
-    }
-
-    .back-button {
-      margin-bottom: 26px;
-    }
-
-    .domain-hero {
+    .detail-hero {
       background: var(--navy);
       color: white;
-      padding: 30px;
-      border-radius: 9px;
+      padding: 27px;
+      border-radius: 10px;
       display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 45px;
-      margin-bottom: 36px;
+      grid-template-columns:
+        1fr auto;
+      gap: 30px;
     }
 
-    .domain-hero .eyebrow {
-      color: #6fa5f4;
+    .detail-hero h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
     }
 
-    .domain-hero h1 {
-      margin-bottom: 10px;
-    }
-
-    .domain-hero p {
-      max-width: 740px;
-      margin-bottom: 0;
-      color: rgba(255,255,255,.68);
-      font-size: 13px;
+    .detail-hero p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.67);
+      font-size: 12px;
       line-height: 1.6;
     }
 
-    .domain-scorecard {
+    .detail-scorecard {
       display: flex;
-      gap: 30px;
+      gap: 24px;
       align-items: center;
     }
 
-    .domain-scorecard > div > span:first-child {
+    .detail-scorecard label {
       display: block;
-      color: rgba(255,255,255,.5);
-      font-size: 9px;
+      font-size: 8px;
+      color: rgba(255, 255, 255, 0.5);
       text-transform: uppercase;
-      letter-spacing: .08em;
-      margin-bottom: 6px;
-    }
-
-    .domain-scorecard strong {
-      font-size: 12px;
+      letter-spacing: 0.08em;
+      margin-bottom: 5px;
     }
 
     .service-section {
-      margin-top: 34px;
+      margin-top: 29px;
     }
 
     .service-title {
       display: flex;
       justify-content: space-between;
       align-items: end;
-      margin-bottom: 14px;
+      margin-bottom: 11px;
     }
 
     .service-title h3 {
       margin: 0;
     }
 
-    .service-title > span {
-      color: var(--muted);
-      font-size: 11px;
-    }
-
     .offering-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 13px;
+      grid-template-columns:
+        repeat(3, 1fr);
+      gap: 12px;
     }
 
     .offering-card {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 18px;
-      box-shadow: var(--shadow);
+      padding: 16px;
     }
 
-    .offering-head {
-      display: flex;
-      gap: 15px;
-      justify-content: space-between;
-      align-items: flex-start;
+    .offering-card h4 {
+      margin: 9px 0 12px;
+      font-size: 13px;
     }
 
-    .offering-head h4 {
-      margin-bottom: 0;
-      font-size: 14px;
-    }
-
-    .offering-meta {
+    .assessment-meta {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      margin: 20px 0;
+      grid-template-columns:
+        repeat(3, 1fr);
       border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
+      border-bottom:
+        1px solid var(--border);
+      margin: 13px 0;
     }
 
-    .offering-meta > div {
-      padding: 11px 0;
+    .assessment-meta div {
+      padding: 9px 5px;
     }
 
-    .offering-meta > div + div {
-      border-left: 1px solid var(--border);
-      padding-left: 14px;
+    .assessment-meta div + div {
+      border-left:
+        1px solid var(--border);
     }
 
-    .offering-meta span,
-    .offering-meta strong {
+    .assessment-meta label {
+      font-size: 8px;
+      text-transform: uppercase;
+      color: var(--muted);
       display: block;
     }
 
-    .offering-meta span,
-    .product-list > span:first-child {
-      color: var(--muted);
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
-
-    .offering-meta strong {
+    .assessment-meta strong {
+      font-size: 10px;
+      display: block;
       margin-top: 4px;
+    }
+
+    .product-chip {
+      display: inline-flex;
+      background: #eef3f8;
+      padding: 4px 7px;
+      border-radius: 4px;
+      font-size: 9px;
+      margin: 3px 3px 0 0;
+    }
+
+    .summary {
       font-size: 11px;
+      color: var(--muted);
+      line-height: 1.6;
     }
 
-    .product-list {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 6px;
+    .loading,
+    .error {
+      padding: 50px;
+      text-align: center;
+      color: var(--muted);
     }
 
-    .product-list > span:first-child {
-      margin-right: 4px;
-    }
-
-    #page-root.hidden {
+    .hidden {
       display: none;
     }
 
     @media (max-width: 1150px) {
+      .metrics {
+        grid-template-columns:
+          repeat(3, 1fr);
+      }
+
       .domain-grid,
-      .metric-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
       .offering-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .two-column {
-        grid-template-columns: 1fr;
+        grid-template-columns:
+          repeat(2, 1fr);
       }
     }
 
-    @media (max-width: 780px) {
+    @media (max-width: 760px) {
       .sidebar {
         position: static;
         width: 100%;
       }
 
-      .shell {
-        display: block;
-      }
-
-      nav {
+      .navigation {
         display: flex;
-        overflow-x: auto;
-        padding: 10px;
+        overflow: auto;
       }
 
-      .nav-label,
+      .navigation-label,
       .sidebar-footer {
         display: none;
       }
 
-      .nav-button {
+      .navigation button {
         width: auto;
         white-space: nowrap;
       }
 
-      .content-shell {
+      .main {
         margin-left: 0;
-        width: 100%;
       }
 
       .topbar {
-        padding: 0 20px;
+        padding: 0 18px;
       }
 
-      main {
-        padding: 28px 18px 60px;
+      .content {
+        padding: 25px 17px 55px;
       }
 
-      .metric-grid,
+      .metrics,
       .domain-grid,
-      .assessment-grid,
-      .offering-grid {
+      .offering-grid,
+      .coverage-grid,
+      .two-column {
         grid-template-columns: 1fr;
       }
 
       .hero,
-      .domain-hero {
+      .detail-hero {
         display: block;
       }
 
-      .as-of,
-      .domain-scorecard {
-        margin-top: 22px;
+      .notice,
+      .detail-scorecard {
+        margin-top: 18px;
       }
 
-      .domain-scorecard {
-        flex-wrap: wrap;
+      .toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .search {
+        min-width: 180px;
       }
     }
   </style>
 </head>
 
 <body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-line">
+          <span class="brand-mark">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
 
-<div class="shell">
-
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-mark">
-        <div class="brand-blocks">
-          <span></span><span></span><span></span><span></span>
+          DLR
         </div>
-        <div class="brand-name">DLR</div>
+
+        <div class="product-name">
+          Enterprise Services<br>
+          Portfolio
+        </div>
       </div>
-      <div class="product-name">
-        Enterprise Services<br>
-        Portfolio
+
+      <nav class="navigation">
+        <div class="navigation-label">
+          MANAGE
+        </div>
+
+        <button
+          data-page="overview"
+          onclick="showPage('overview')"
+        >
+          ⌂ Overview
+        </button>
+
+        <button
+          data-page="health"
+          onclick="showPage('health')"
+        >
+          ◉ Portfolio Health
+        </button>
+
+        <button
+          data-page="services"
+          onclick="showPage('services')"
+        >
+          ▦ Services
+        </button>
+
+        <button
+          data-page="offerings"
+          onclick="showPage('offerings')"
+        >
+          ◫ Service Offerings
+        </button>
+
+        <button
+          data-page="products"
+          onclick="showPage('products')"
+        >
+          ◇ Products & Systems
+        </button>
+
+        <button
+          data-page="relationships"
+          onclick="showPage('relationships')"
+        >
+          ⇄ Offering–Product Map
+        </button>
+
+        <button
+          data-page="assessments"
+          onclick="showPage('assessments')"
+        >
+          ✓ Assessments
+        </button>
+
+        <button
+          data-page="quality"
+          onclick="showPage('quality')"
+        >
+          ⚑ Data Quality
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        Enterprise Services Platforms<br>
+        V1 Prototype
       </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div
+          class="breadcrumb"
+          id="breadcrumb"
+        >
+          Portfolio Management
+        </div>
+
+        <div class="environment">
+          DEV
+        </div>
+      </header>
+
+      <main
+        class="content"
+        id="content"
+      >
+        <div class="loading">
+          Loading portfolio...
+        </div>
+      </main>
     </div>
-
-    <nav>
-      <div class="nav-label">PORTFOLIO</div>
-
-      <button class="nav-button active" data-page="overview" onclick="showPage('overview')">
-        <span class="nav-icon">⌂</span>
-        Overview
-      </button>
-
-      <button class="nav-button" data-page="services" onclick="showPage('services')">
-        <span class="nav-icon">▦</span>
-        Services
-      </button>
-
-      <button class="nav-button" data-page="offerings" onclick="showPage('offerings')">
-        <span class="nav-icon">◫</span>
-        Service Offerings
-      </button>
-
-      <button class="nav-button" data-page="products" onclick="showPage('products')">
-        <span class="nav-icon">◇</span>
-        Products & Systems
-      </button>
-
-      <button class="nav-button" data-page="assessments" onclick="showPage('assessments')">
-        <span class="nav-icon">◉</span>
-        Assessments
-      </button>
-    </nav>
-
-    <div class="sidebar-footer">
-      Enterprise Services Platforms<br>
-      V1 Prototype
-    </div>
-  </aside>
-
-  <div class="content-shell">
-
-    <header class="topbar">
-      <div class="topbar-title">
-        Portfolio Management
-      </div>
-
-      <div class="environment">
-        DEV
-      </div>
-    </header>
-
-    <main>
-      <div id="page-root"></div>
-      <div id="domain-root">
-        ${renderDomainDetails()}
-      </div>
-    </main>
-
   </div>
-</div>
 
-<script>
-  const pages = {
-    overview: ${JSON.stringify(renderOverview())},
-    services: ${JSON.stringify(renderServices())},
-    offerings: ${JSON.stringify(renderOfferings())},
-    products: ${JSON.stringify(renderProducts())},
-    assessments: ${JSON.stringify(renderAssessments())}
-  };
+  <script>
+    let viewModel = null;
 
-  const pageRoot = document.getElementById('page-root');
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(
+          /[&<>"']/g,
+          character => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+          })[character]
+        );
+    }
 
-  function showPage(pageName) {
-    closeDomain(false);
-
-    pageRoot.innerHTML = pages[pageName] || pages.overview;
-    pageRoot.classList.remove('hidden');
-
-    document.querySelectorAll('.nav-button').forEach(button => {
-      button.classList.toggle(
-        'active',
-        button.dataset.page === pageName
+    function renderTag(value) {
+      return (
+        '<span class="tag">' +
+        escapeHtml(value || 'Unknown') +
+        '</span>'
       );
-    });
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function openDomain(domainId) {
-    pageRoot.classList.add('hidden');
-
-    document.querySelectorAll('.domain-detail').forEach(domain => {
-      domain.classList.remove('active');
-    });
-
-    const domain = document.getElementById('domain-' + domainId);
-
-    if (domain) {
-      domain.classList.add('active');
     }
 
-    document.querySelectorAll('.nav-button').forEach(button => {
-      button.classList.remove('active');
-    });
+    function renderHealth(value) {
+      const normalized =
+        String(value || 'unknown').toLowerCase();
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+      const label = value
+        ? String(value)
+            .charAt(0)
+            .toUpperCase() +
+          String(value).slice(1)
+        : 'Unknown';
 
-  function closeDomain(returnToOverview = true) {
-    document.querySelectorAll('.domain-detail').forEach(domain => {
-      domain.classList.remove('active');
-    });
-
-    if (returnToOverview) {
-      showPage('overview');
+      return (
+        '<span class="badge ' +
+        escapeHtml(normalized) +
+        '">' +
+        '<span class="dot"></span>' +
+        escapeHtml(label) +
+        '</span>'
+      );
     }
-  }
 
-  function filterTable(value) {
-    const query = value.trim().toLowerCase();
+    function renderSynthetic(assessment) {
+      if (!assessment?.syntheticDemo) {
+        return '';
+      }
 
-    document.querySelectorAll('#portfolio-table tbody tr').forEach(row => {
-      row.style.display =
-        row.textContent.toLowerCase().includes(query)
-          ? ''
-          : 'none';
-    });
-  }
+      return (
+        '<span class="badge synthetic">' +
+        'Synthetic demo' +
+        '</span>'
+      );
+    }
 
-  showPage('overview');
-</script>
+    function getAssessment(offering) {
+      return offering.assessment || {};
+    }
 
+    function renderHero(
+      eyebrow,
+      title,
+      description,
+      notice = ''
+    ) {
+      return (
+        '<section class="hero">' +
+          '<div>' +
+            '<div class="eyebrow">' +
+              escapeHtml(eyebrow) +
+            '</div>' +
+
+            '<h1>' +
+              escapeHtml(title) +
+            '</h1>' +
+
+            '<p>' +
+              escapeHtml(description) +
+            '</p>' +
+          '</div>' +
+
+          (
+            notice
+              ? (
+                '<div class="notice">' +
+                  escapeHtml(notice) +
+                '</div>'
+              )
+              : ''
+          ) +
+        '</section>'
+      );
+    }
+
+    function renderMetric(
+      value,
+      label,
+      description
+    ) {
+      return (
+        '<div class="card metric">' +
+          '<strong>' +
+            escapeHtml(value) +
+          '</strong>' +
+
+          '<span>' +
+            escapeHtml(label) +
+          '</span>' +
+
+          '<small>' +
+            escapeHtml(description) +
+          '</small>' +
+        '</div>'
+      );
+    }
+
+    function renderTable(headers, rows) {
+      return (
+        '<section class="panel table-panel">' +
+          '<div class="table-wrap">' +
+            '<table>' +
+              '<thead>' +
+                '<tr>' +
+                  headers
+                    .map(
+                      header =>
+                        '<th>' +
+                          escapeHtml(header) +
+                        '</th>'
+                    )
+                    .join('') +
+                '</tr>' +
+              '</thead>' +
+
+              '<tbody>' +
+                rows.join('') +
+              '</tbody>' +
+            '</table>' +
+          '</div>' +
+        '</section>'
+      );
+    }
+
+    function setNavigation(pageName) {
+      document
+        .querySelectorAll(
+          '.navigation button'
+        )
+        .forEach(button => {
+          button.classList.toggle(
+            'active',
+            button.dataset.page === pageName
+          );
+        });
+
+      const title = pageName
+        .replace(/-/g, ' ')
+        .replace(
+          /\b\w/g,
+          character =>
+            character.toUpperCase()
+        );
+
+      document.getElementById(
+        'breadcrumb'
+      ).textContent =
+        'Portfolio Management / ' + title;
+    }
+
+    function showPage(pageName) {
+      setNavigation(pageName);
+
+      const renderers = {
+        overview: renderOverview,
+        health: renderPortfolioHealth,
+        services: renderServices,
+        offerings: renderOfferings,
+        products: renderProducts,
+        relationships: renderRelationships,
+        assessments: renderAssessments,
+        quality: renderDataQuality
+      };
+
+      const renderer =
+        renderers[pageName] ||
+        renderOverview;
+
+      document.getElementById(
+        'content'
+      ).innerHTML = renderer();
+
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+
+    function renderOverview() {
+      const coverage =
+        viewModel.coverage;
+
+      const domainCards =
+        viewModel.domains
+          .map(domain => {
+            return (
+              '<button ' +
+                'class="card domain-card" ' +
+                'onclick="openDomain(\'' +
+                  domain.id +
+                '\')">' +
+
+                '<div>' +
+                  renderTag(
+                    domain.validationStatus
+                  ) +
+                '</div>' +
+
+                '<h3>' +
+                  escapeHtml(domain.name) +
+                '</h3>' +
+
+                '<p>' +
+                  escapeHtml(
+                    domain.description
+                  ) +
+                '</p>' +
+
+                '<div class="counts">' +
+                  '<div>' +
+                    '<strong>' +
+                      domain.serviceCount +
+                    '</strong>' +
+                    '<small>Services</small>' +
+                  '</div>' +
+
+                  '<div>' +
+                    '<strong>' +
+                      domain.offeringCount +
+                    '</strong>' +
+                    '<small>Offerings</small>' +
+                  '</div>' +
+                '</div>' +
+
+                '<div class="tag-list">' +
+                  renderTag(domain.source) +
+                '</div>' +
+              '</button>'
+            );
+          })
+          .join('');
+
+      return (
+        renderHero(
+          'ENTERPRISE SERVICES PLATFORMS',
+          'Portfolio Overview',
+          'Understand what we provide, connect it to enabling technology, assess health and maturity, choose a direction, and track action.',
+          'Assessment values are synthetic placeholders until validated by portfolio owners.'
+        ) +
+
+        '<section class="metrics">' +
+          renderMetric(
+            viewModel.domains.length,
+            'Domains',
+            'Strategic capability pillars'
+          ) +
+
+          renderMetric(
+            viewModel.services.length,
+            'Services',
+            'Managed capabilities'
+          ) +
+
+          renderMetric(
+            viewModel.offerings.length,
+            'Offerings',
+            'Consumer outcomes'
+          ) +
+
+          renderMetric(
+            viewModel.products.length,
+            'Products & Systems',
+            'Technology enablers'
+          ) +
+
+          renderMetric(
+            viewModel.relationships.length,
+            'Relationships',
+            'Curated offering mappings'
+          ) +
+        '</section>' +
+
+        '<div class="section-heading">' +
+          '<div>' +
+            '<div class="eyebrow">' +
+              'PORTFOLIO STRUCTURE' +
+            '</div>' +
+
+            '<h2>' +
+              'Four strategic domains' +
+            '</h2>' +
+          '</div>' +
+        '</div>' +
+
+        '<section class="domain-grid">' +
+          domainCards +
+        '</section>' +
+
+        '<div class="section-heading">' +
+          '<div>' +
+            '<div class="eyebrow">' +
+              'ASSESSMENT COVERAGE' +
+            '</div>' +
+
+            '<h2>' +
+              'Evidence status' +
+            '</h2>' +
+          '</div>' +
+        '</div>' +
+
+        '<section class="coverage-grid">' +
+          '<div class="panel coverage-card">' +
+            '<strong>' +
+              coverage.validated +
+            '</strong>' +
+            '<span>Validated assessments</span>' +
+          '</div>' +
+
+          '<div class="panel coverage-card">' +
+            '<strong>' +
+              coverage.synthetic +
+            '</strong>' +
+            '<span>Synthetic placeholders</span>' +
+          '</div>' +
+
+          '<div class="panel coverage-card">' +
+            '<strong>' +
+              coverage.missing +
+            '</strong>' +
+            '<span>Missing assessments</span>' +
+          '</div>' +
+
+          '<div class="panel coverage-card">' +
+            '<strong>' +
+              coverage.needsReview +
+            '</strong>' +
+            '<span>Offerings needing review</span>' +
+          '</div>' +
+        '</section>'
+      );
+    }
+
+    function countAssessmentValues(field) {
+      return viewModel.offerings.reduce(
+        (counts, offering) => {
+          const assessment =
+            getAssessment(offering);
+
+          const value =
+            assessment[field] || 'Unknown';
+
+          counts[value] =
+            (counts[value] || 0) + 1;
+
+          return counts;
+        },
+        {}
+      );
+    }
+
+    function renderBars(values, total) {
+      return Object.entries(values)
+        .map(([label, count]) => {
+          const percentage = total
+            ? Math.round(
+                count / total * 100
+              )
+            : 0;
+
+          return (
+            '<div class="chart-row">' +
+              '<span>' +
+                escapeHtml(label) +
+              '</span>' +
+
+              '<div class="bar">' +
+                '<div ' +
+                  'class="bar-fill" ' +
+                  'style="width:' +
+                    percentage +
+                  '%">' +
+                '</div>' +
+              '</div>' +
+
+              '<strong>' +
+                count +
+              '</strong>' +
+            '</div>'
+          );
+        })
+        .join('');
+    }
+
+    function renderPortfolioHealth() {
+      const health =
+        countAssessmentValues('health');
+
+      const maturity =
+        countAssessmentValues('maturity');
+
+      const direction =
+        countAssessmentValues('direction');
+
+      return (
+        renderHero(
+          'ASSESS • DIRECT • MEASURE',
+          'Portfolio Health',
+          'View assessment signals independently rather than hiding them inside a single artificial score.',
+          'Synthetic demo assessments are clearly separated from validated owner assessments.'
+        ) +
+
+        '<section class="two-column">' +
+          '<div class="panel quality-panel">' +
+            '<div class="eyebrow">HEALTH</div>' +
+            '<h2>Offering health</h2>' +
+            renderBars(
+              health,
+              viewModel.offerings.length
+            ) +
+          '</div>' +
+
+          '<div class="panel quality-panel">' +
+            '<div class="eyebrow">MATURITY</div>' +
+            '<h2>Capability maturity</h2>' +
+            renderBars(
+              maturity,
+              viewModel.offerings.length
+            ) +
+          '</div>' +
+
+          '<div class="panel quality-panel">' +
+            '<div class="eyebrow">DIRECTION</div>' +
+            '<h2>Strategic direction</h2>' +
+            renderBars(
+              direction,
+              viewModel.offerings.length
+            ) +
+          '</div>' +
+
+          '<div class="panel quality-panel">' +
+            '<div class="eyebrow">COVERAGE</div>' +
+            '<h2>Assessment integrity</h2>' +
+            renderBars(
+              {
+                Validated:
+                  viewModel.coverage.validated,
+                Synthetic:
+                  viewModel.coverage.synthetic,
+                Missing:
+                  viewModel.coverage.missing
+              },
+              viewModel.offerings.length
+            ) +
+          '</div>' +
+        '</section>'
+      );
+    }
+
+    function renderToolbar(entityName) {
+      return (
+        '<div class="toolbar">' +
+          '<div class="filters">' +
+            '<input ' +
+              'class="search" ' +
+              'placeholder="Filter ' +
+                escapeHtml(entityName) +
+              '..." ' +
+              'oninput="filterRows(this.value)">' +
+
+            '<select ' +
+              'onchange="' +
+                'filterRows(' +
+                  'document.querySelector(' +
+                    '\'.search\'' +
+                  ').value,' +
+                  'this.value' +
+                ')' +
+              '">' +
+
+              '<option value="">' +
+                'All domains' +
+              '</option>' +
+
+              viewModel.domains
+                .map(
+                  domain =>
+                    '<option>' +
+                      escapeHtml(
+                        domain.name
+                      ) +
+                    '</option>'
+                )
+                .join('') +
+            '</select>' +
+          '</div>' +
+
+          '<span ' +
+            'class="visible-count" ' +
+            'id="visible-count">' +
+          '</span>' +
+        '</div>'
+      );
+    }
+
+    function renderInventoryPage(
+      eyebrow,
+      title,
+      description,
+      entityName,
+      headers,
+      rows
+    ) {
+      const table = renderTable(
+        headers,
+        rows
+      );
+
+      const innerTable = table
+        .replace(
+          '<section class="panel table-panel">',
+          ''
+        )
+        .replace(
+          '</section>',
+          ''
+        );
+
+      return (
+        renderHero(
+          eyebrow,
+          title,
+          description
+        ) +
+
+        '<section class="panel table-panel">' +
+          renderToolbar(entityName) +
+          innerTable +
+        '</section>'
+      );
+    }
+
+    function renderServices() {
+      const rows =
+        viewModel.services.map(service => {
+          const searchText = (
+            service.name + ' ' +
+            service.domainName + ' ' +
+            (service.owner || '')
+          ).toLowerCase();
+
+          return (
+            '<tr ' +
+              'data-search="' +
+                escapeHtml(searchText) +
+              '" ' +
+              'data-domain="' +
+                escapeHtml(
+                  service.domainName
+                ) +
+              '">' +
+
+              '<td>' +
+                '<button ' +
+                  'class="link-button" ' +
+                  'onclick="openService(\'' +
+                    service.id +
+                  '\')">' +
+                  escapeHtml(
+                    service.name
+                  ) +
+                '</button>' +
+
+                '<div class="secondary-text">' +
+                  escapeHtml(
+                    service.description
+                  ) +
+                '</div>' +
+              '</td>' +
+
+              '<td>' +
+                escapeHtml(
+                  service.domainName
+                ) +
+              '</td>' +
+
+              '<td>' +
+                escapeHtml(
+                  service.owner ||
+                  'Unassigned'
+                ) +
+              '</td>' +
+
+              '<td>' +
+                service.offeringCount +
+              '</td>' +
+
+              '<td>' +
+                renderTag(
+                  service.lifecycle
+                ) +
+              '</td>' +
+
+              '<td>' +
+                renderTag(
+                  service.validationStatus
+                ) +
+              '</td>' +
+            '</tr>'
+          );
+        });
+
+      return renderInventoryPage(
+        'PORTFOLIO INVENTORY',
+        'Services',
+        'Managed capabilities organized under the four strategic domains.',
+        'services',
+        [
+          'Service',
+          'Domain',
+          'Owner',
+          'Offerings',
+          'Lifecycle',
+          'Validation'
+        ],
+        rows
+      );
+    }
+
+    function renderOfferings() {
+      const rows =
+        viewModel.offerings.map(offering => {
+          const assessment =
+            getAssessment(offering);
+
+          const searchText = (
+            offering.name + ' ' +
+            offering.serviceName + ' ' +
+            offering.domainName + ' ' +
+            (offering.owner || '')
+          ).toLowerCase();
+
+          return (
+            '<tr ' +
+              'data-search="' +
+                escapeHtml(searchText) +
+              '" ' +
+              'data-domain="' +
+                escapeHtml(
+                  offering.domainName
+                ) +
+              '">' +
+
+              '<td>' +
+                '<button ' +
+                  'class="link-button" ' +
+                  'onclick="openOffering(\'' +
+                    offering.id +
+                  '\')">' +
+                  escapeHtml(
+                    offering.name
+                  ) +
+                '</button>' +
+
+                '<div class="secondary-text">' +
+                  escapeHtml(
+                    offering.serviceName
+                  ) +
+                '</div>' +
+              '</td>' +
+
+              '<td>' +
+                escapeHtml(
+                  offering.domainName
+                ) +
+              '</td>' +
+
+              '<td>' +
+                renderHealth(
+                  assessment.health
+                ) +
+              '</td>' +
+
+              '<td>' +
+                renderTag(
+                  assessment.maturity
+                ) +
+              '</td>' +
+
+              '<td>' +
+                renderTag(
+                  assessment.direction
+                ) +
+              '</td>' +
+
+              '<td>' +
+                renderSynthetic(
+                  assessment
+                ) +
+              '</td>' +
+
+              '<td>' +
+                offering.products.length +
+              '</td>' +
+            '</tr>'
+          );
+        });
+
+      return renderInventoryPage(
+        'PORTFOLIO INVENTORY',
+        'Service Offerings',
+        'Discrete outcomes consumed by employees and business teams.',
+        'offerings',
+        [
+          'Offering',
+          'Domain',
+          'Health',
+          'Maturity',
+          'Direction',
+          'Evidence State',
+          'Products'
+        ],
+        rows
+      );
+    }
+
+    function renderProducts() {
+      const rows =
+        viewModel.products.map(product => {
+          const searchText = (
+            product.name + ' ' +
+            (product.vendor || '') + ' ' +
+            (product.primaryDomainId || '')
+          ).toLowerCase();
+
+          return (
+            '<tr ' +
+              'data-search="' +
+                escapeHtml(searchText) +
+              '">' +
+
+              '<td>' +
+                '<button ' +
+                  'class="link-button" ' +
+                  'onclick="openProduct(\'' +
+                    product.id +
+                  '\')">' +
+                  escapeHtml(
+                    product.name
+                  ) +
+                '</button>' +
+              '</td>' +
+
+              '<td>' +
+                escapeHtml(
+                  product.vendor ||
+                  'Unknown'
+                ) +
+              '</td>' +
+
+              '<td>' +
+                renderTag(
+                  product.lifecycle
+                ) +
+              '</td>' +
+
+              '<td>' +
+                product.offerings.length +
+              '</td>' +
+
+              '<td>' +
+                renderTag(
+                  product.validationStatus
+                ) +
+              '</td>' +
+
+              '<td>' +
+                escapeHtml(
+                  product.evidence || ''
+                ) +
+              '</td>' +
+            '</tr>'
+          );
+        });
+
+      return renderInventoryPage(
+        'TECHNOLOGY PORTFOLIO',
+        'Products & Systems',
+        'Technology platforms, applications, modules, and internal systems that enable portfolio offerings.',
+        'products',
+        [
+          'Product / System',
+          'Vendor',
+          'Lifecycle',
+          'Mapped Offerings',
+          'Validation',
+          'Evidence Basis'
+        ],
+        rows
+      );
+    }
+
+    function renderRelationships() {
+      const offeringById = new Map(
+        viewModel.offerings.map(
+          offering => [
+            offering.id,
+            offering
+          ]
+        )
+      );
+
+      const productById = new Map(
+        viewModel.products.map(
+          product => [
+            product.id,
+            product
+          ]
+        )
+      );
+
+      const rows =
+        viewModel.relationships.map(
+          relationship => {
+            const offering =
+              offeringById.get(
+                relationship.offeringId
+              );
+
+            const product =
+              productById.get(
+                relationship.productId
+              );
+
+            const searchText = (
+              (offering?.name || '') + ' ' +
+              (product?.name || '') + ' ' +
+              relationship.role + ' ' +
+              relationship.confidence
+            ).toLowerCase();
+
+            return (
+              '<tr ' +
+                'data-search="' +
+                  escapeHtml(searchText) +
+                '" ' +
+                'data-domain="' +
+                  escapeHtml(
+                    offering?.domainName || ''
+                  ) +
+                '">' +
+
+                '<td>' +
+                  escapeHtml(
+                    offering?.name ||
+                    relationship.offeringId
+                  ) +
+
+                  '<div class="secondary-text">' +
+                    escapeHtml(
+                      offering?.serviceName ||
+                      ''
+                    ) +
+                  '</div>' +
+                '</td>' +
+
+                '<td>' +
+                  escapeHtml(
+                    product?.name ||
+                    relationship.productId
+                  ) +
+                '</td>' +
+
+                '<td>' +
+                  renderTag(
+                    relationship.role
+                  ) +
+                '</td>' +
+
+                '<td>' +
+                  renderTag(
+                    relationship.confidence
+                  ) +
+                '</td>' +
+
+                '<td>' +
+                  renderTag(
+                    relationship.status
+                  ) +
+                '</td>' +
+
+                '<td>' +
+                  renderHealth(
+                    relationship.health
+                  ) +
+                '</td>' +
+
+                '<td>' +
+                  renderTag(
+                    relationship.validationStatus
+                  ) +
+                '</td>' +
+              '</tr>'
+            );
+          }
+        );
+
+      return renderInventoryPage(
+        'CONNECT',
+        'Offering–Product Map',
+        'Shows why a product is connected to an offering, confidence in the mapping, and the health of the relationship.',
+        'relationships',
+        [
+          'Offering',
+          'Product / System',
+          'Relationship Role',
+          'Confidence',
+          'Status',
+          'Relationship Health',
+          'Validation'
+        ],
+        rows
+      );
+    }
+
+    function renderAssessments() {
+      const offeringById = new Map(
+        viewModel.offerings.map(
+          offering => [
+            offering.id,
+            offering
+          ]
+        )
+      );
+
+      const assessments = [
+        ...viewModel.assessments
+      ].sort(
+        (left, right) =>
+          String(
+            right.assessmentDate
+          ).localeCompare(
+            String(
+              left.assessmentDate
+            )
+          )
+      );
+
+      const rows =
+        assessments.map(assessment => {
+          const offering =
+            offeringById.get(
+              assessment.entityId
+            );
+
+          const searchText = (
+            (offering?.name || '') + ' ' +
+            assessment.health + ' ' +
+            assessment.maturity + ' ' +
+            assessment.direction + ' ' +
+            assessment.status
+          ).toLowerCase();
+
+          return (
+            '<tr ' +
+              'data-search="' +
+                escapeHtml(searchText) +
+              '" ' +
+              'data-domain="' +
+                escapeHtml(
+                  offering?.domainName || ''
+                ) +
+              '">' +
+
+              '<td>' +
+                escapeHtml(
+                  offering?.name ||
+                  assessment.entityId
+                ) +
+
+                '<div class="secondary-text">' +
+                  escapeHtml(
+                    offering?.serviceName ||
+                    ''
+                  ) +
+                '</div>' +
+              '</td>' +
+
+              '<td>' +
+                escapeHtml(
+                  assessment.assessmentDate ||
+                  ''
+                ) +
+              '</td>' +
+
+              '<td>' +
+                renderHealth(
+                  assessment.health
+                ) +
+              '</td>' +
+
+              '<td>' +
+                renderTag(
+                  assessment.maturity
+                ) +
+              '</td>' +
+
+              '<td>' +
+                renderTag(
+                  assessment.direction
+                ) +
+              '</td>' +
+
+              '<td>' +
+                renderTag(
+                  assessment.risk
+                ) +
+              '</td>' +
+
+              '<td>' +
+                renderTag(
+                  assessment.strategicFit
+                ) +
+              '</td>' +
+
+              '<td>' +
+                renderSynthetic(
+                  assessment
+                ) +
+
+                renderTag(
+                  assessment.status
+                ) +
+              '</td>' +
+            '</tr>'
+          );
+        });
+
+      return renderInventoryPage(
+        'ASSESS',
+        'Assessments',
+        'Point-in-time records covering health, maturity, direction, lifecycle, risk, cost, strategic fit, evidence, outcomes, and recommended action.',
+        'assessments',
+        [
+          'Offering',
+          'Date',
+          'Health',
+          'Maturity',
+          'Direction',
+          'Risk',
+          'Strategic Fit',
+          'State'
+        ],
+        rows
+      );
+    }
+
+    function renderDataQuality() {
+      const result =
+        viewModel.validation;
+
+      const errors =
+        result.errors.length
+          ? result.errors
+              .map(
+                error =>
+                  '<li>' +
+                    escapeHtml(error) +
+                  '</li>'
+              )
+              .join('')
+          : '<li>No structural errors detected.</li>';
+
+      const warnings =
+        result.warnings.length
+          ? result.warnings
+              .map(
+                warning =>
+                  '<li>' +
+                    escapeHtml(warning) +
+                  '</li>'
+              )
+              .join('')
+          : '<li>No warnings.</li>';
+
+      return (
+        renderHero(
+          'DATA FOUNDATION',
+          'Data Quality',
+          'Make gaps visible before portfolio information is used for decisions.'
+        ) +
+
+        '<section class="two-column">' +
+          '<div class="panel quality-panel">' +
+            '<div class="eyebrow">VALIDATION</div>' +
+
+            '<h2>' +
+              (
+                result.valid
+                  ? 'Data model is structurally valid'
+                  : 'Structural errors found'
+              ) +
+            '</h2>' +
+
+            '<ul>' +
+              errors +
+            '</ul>' +
+          '</div>' +
+
+          '<div class="panel quality-panel">' +
+            '<div class="eyebrow">WARNINGS</div>' +
+
+            '<h2>' +
+              result.warnings.length +
+              ' warning(s)' +
+            '</h2>' +
+
+            '<ul>' +
+              warnings +
+            '</ul>' +
+          '</div>' +
+
+          '<div class="panel quality-panel">' +
+            '<div class="eyebrow">PROVENANCE</div>' +
+            '<h2>Source transparency</h2>' +
+            '<ul>' +
+              '<li>Monday: current board inventory</li>' +
+              '<li>Other Agent: additional discoveries</li>' +
+              '<li>Both: present in both working models</li>' +
+              '<li>Proposed: requires owner review</li>' +
+            '</ul>' +
+          '</div>' +
+
+          '<div class="panel quality-panel">' +
+            '<div class="eyebrow">ASSESSMENT STATUS</div>' +
+            '<h2>Coverage controls</h2>' +
+            '<ul>' +
+              '<li>' +
+                viewModel.coverage.validated +
+                ' validated assessments' +
+              '</li>' +
+
+              '<li>' +
+                viewModel.coverage.synthetic +
+                ' synthetic demo assessments' +
+              '</li>' +
+
+              '<li>' +
+                viewModel.coverage.missing +
+                ' missing assessments' +
+              '</li>' +
+
+              '<li>' +
+                viewModel.coverage.needsReview +
+                ' offerings need review' +
+              '</li>' +
+            '</ul>' +
+          '</div>' +
+        '</section>'
+      );
+    }
+
+    function renderOfferingCard(offering) {
+      const assessment =
+        getAssessment(offering);
+
+      const productChips =
+        offering.products
+          .slice(0, 4)
+          .map(
+            product =>
+              '<span class="product-chip">' +
+                escapeHtml(product.name) +
+              '</span>'
+          )
+          .join('');
+
+      return (
+        '<article class="card offering-card">' +
+          '<div>' +
+            renderHealth(
+              assessment.health
+            ) +
+
+            ' ' +
+
+            renderSynthetic(
+              assessment
+            ) +
+          '</div>' +
+
+          '<h4>' +
+            '<button ' +
+              'class="link-button" ' +
+              'onclick="openOffering(\'' +
+                offering.id +
+              '\')">' +
+              escapeHtml(
+                offering.name
+              ) +
+            '</button>' +
+          '</h4>' +
+
+          '<div class="assessment-meta">' +
+            '<div>' +
+              '<label>Maturity</label>' +
+              '<strong>' +
+                escapeHtml(
+                  assessment.maturity ||
+                  'Unknown'
+                ) +
+              '</strong>' +
+            '</div>' +
+
+            '<div>' +
+              '<label>Direction</label>' +
+              '<strong>' +
+                escapeHtml(
+                  assessment.direction ||
+                  'Unknown'
+                ) +
+              '</strong>' +
+            '</div>' +
+
+            '<div>' +
+              '<label>Products</label>' +
+              '<strong>' +
+                offering.products.length +
+              '</strong>' +
+            '</div>' +
+          '</div>' +
+
+          '<div>' +
+            productChips +
+          '</div>' +
+        '</article>'
+      );
+    }
+
+    function openDomain(domainId) {
+      const domain =
+        viewModel.domains.find(
+          item => item.id === domainId
+        );
+
+      if (!domain) {
+        return;
+      }
+
+      setNavigation('');
+
+      document.getElementById(
+        'breadcrumb'
+      ).textContent =
+        'Portfolio / ' + domain.name;
+
+      const serviceSections =
+        domain.services
+          .map(service => {
+            return (
+              '<section class="service-section">' +
+                '<div class="service-title">' +
+                  '<div>' +
+                    '<div class="eyebrow">SERVICE</div>' +
+                    '<h3>' +
+                      escapeHtml(
+                        service.name
+                      ) +
+                    '</h3>' +
+                  '</div>' +
+
+                  '<button ' +
+                    'class="link-button" ' +
+                    'onclick="openService(\'' +
+                      service.id +
+                    '\')">' +
+                    service.offeringCount +
+                    ' offerings →' +
+                  '</button>' +
+                '</div>' +
+
+                '<div class="offering-grid">' +
+                  service.offerings
+                    .map(renderOfferingCard)
+                    .join('') +
+                '</div>' +
+              '</section>'
+            );
+          })
+          .join('');
+
+      document.getElementById(
+        'content'
+      ).innerHTML =
+        '<div class="detail-navigation">' +
+          '<button ' +
+            'class="back-button" ' +
+            'onclick="showPage(\'overview\')">' +
+            '← Overview' +
+          '</button>' +
+        '</div>' +
+
+        '<section class="detail-hero">' +
+          '<div>' +
+            '<div class="eyebrow">' +
+              'STRATEGIC DOMAIN' +
+            '</div>' +
+
+            '<h1>' +
+              escapeHtml(domain.name) +
+            '</h1>' +
+
+            '<p>' +
+              escapeHtml(
+                domain.description
+              ) +
+            '</p>' +
+          '</div>' +
+
+          '<div class="detail-scorecard">' +
+            '<div>' +
+              '<label>Services</label>' +
+              '<strong>' +
+                domain.serviceCount +
+              '</strong>' +
+            '</div>' +
+
+            '<div>' +
+              '<label>Offerings</label>' +
+              '<strong>' +
+                domain.offeringCount +
+              '</strong>' +
+            '</div>' +
+
+            '<div>' +
+              '<label>Validation</label>' +
+              renderTag(
+                domain.validationStatus
+              ) +
+            '</div>' +
+          '</div>' +
+        '</section>' +
+
+        serviceSections;
+
+      window.scrollTo({
+        top: 0
+      });
+    }
+
+    function openService(serviceId) {
+      const service =
+        viewModel.services.find(
+          item => item.id === serviceId
+        );
+
+      if (!service) {
+        return;
+      }
+
+      const domain =
+        viewModel.domains.find(
+          item =>
+            item.id === service.domainId
+        );
+
+      document.getElementById(
+        'breadcrumb'
+      ).textContent =
+        'Services / ' + service.name;
+
+      document.getElementById(
+        'content'
+      ).innerHTML =
+        '<div class="detail-navigation">' +
+          '<button ' +
+            'class="back-button" ' +
+            'onclick="showPage(\'services\')">' +
+            '← Services' +
+          '</button>' +
+
+          '<button ' +
+            'class="back-button" ' +
+            'onclick="openDomain(\'' +
+              service.domainId +
+            '\')">' +
+            escapeHtml(
+              domain?.name || 'Domain'
+            ) +
+          '</button>' +
+        '</div>' +
+
+        renderHero(
+          'SERVICE',
+          service.name,
+          service.description
+        ) +
+
+        '<div class="offering-grid">' +
+          service.offerings
+            .map(renderOfferingCard)
+            .join('') +
+        '</div>';
+
+      window.scrollTo({
+        top: 0
+      });
+    }
+
+    function openOffering(offeringId) {
+      const offering =
+        viewModel.offerings.find(
+          item => item.id === offeringId
+        );
+
+      if (!offering) {
+        return;
+      }
+
+      const assessment =
+        getAssessment(offering);
+
+      const relationships =
+        offering.products.length
+          ? offering.products
+              .map(product => {
+                return (
+                  '<p>' +
+                    '<button ' +
+                      'class="link-button" ' +
+                      'onclick="openProduct(\'' +
+                        product.id +
+                      '\')">' +
+                      escapeHtml(
+                        product.name
+                      ) +
+                    '</button>' +
+
+                    '<br>' +
+
+                    '<span class="secondary-text">' +
+                      escapeHtml(
+                        product.relationship.role
+                      ) +
+
+                      ' • ' +
+
+                      escapeHtml(
+                        product.relationship
+                          .confidence
+                      ) +
+
+                      ' confidence' +
+                    '</span>' +
+                  '</p>'
+                );
+              })
+              .join('')
+          : (
+            '<p class="summary">' +
+              'No product relationship has been mapped.' +
+            '</p>'
+          );
+
+      document.getElementById(
+        'breadcrumb'
+      ).textContent =
+        'Offerings / ' + offering.name;
+
+      document.getElementById(
+        'content'
+      ).innerHTML =
+        '<div class="detail-navigation">' +
+          '<button ' +
+            'class="back-button" ' +
+            'onclick="showPage(\'offerings\')">' +
+            '← Offerings' +
+          '</button>' +
+
+          '<button ' +
+            'class="back-button" ' +
+            'onclick="openService(\'' +
+              offering.serviceId +
+            '\')">' +
+            escapeHtml(
+              offering.serviceName
+            ) +
+          '</button>' +
+        '</div>' +
+
+        renderHero(
+          'SERVICE OFFERING',
+          offering.name,
+          offering.description ||
+            'No validated description yet.',
+          assessment.syntheticDemo
+            ? 'This offering currently uses a synthetic demo assessment.'
+            : 'This assessment is not marked as synthetic.'
+        ) +
+
+        '<section class="metrics">' +
+          renderMetric(
+            assessment.health || 'Unknown',
+            'Health',
+            'Current assessment'
+          ) +
+
+          renderMetric(
+            assessment.maturity || 'Unknown',
+            'Maturity',
+            'Capability maturity'
+          ) +
+
+          renderMetric(
+            assessment.direction || 'Unknown',
+            'Direction',
+            'Management choice'
+          ) +
+
+          renderMetric(
+            assessment.risk || 'Unknown',
+            'Risk',
+            'Assessment signal'
+          ) +
+
+          renderMetric(
+            offering.products.length,
+            'Products',
+            'Enabling relationships'
+          ) +
+        '</section>' +
+
+        '<section class="two-column">' +
+          '<div class="panel quality-panel">' +
+            '<div class="eyebrow">ASSESSMENT</div>' +
+            '<h2>Latest assessment</h2>' +
+
+            '<p class="summary">' +
+              escapeHtml(
+                assessment.summary ||
+                'No assessment summary.'
+              ) +
+            '</p>' +
+
+            '<div class="tag-list">' +
+              renderTag(
+                assessment.status
+              ) +
+
+              renderTag(
+                assessment.strategicFit
+              ) +
+
+              renderTag(
+                assessment.costSignal
+              ) +
+
+              renderSynthetic(
+                assessment
+              ) +
+            '</div>' +
+          '</div>' +
+
+          '<div class="panel quality-panel">' +
+            '<div class="eyebrow">' +
+              'ENABLING TECHNOLOGY' +
+            '</div>' +
+
+            '<h2>' +
+              'Offering–product relationships' +
+            '</h2>' +
+
+            relationships +
+          '</div>' +
+        '</section>';
+
+      window.scrollTo({
+        top: 0
+      });
+    }
+
+    function openProduct(productId) {
+      const product =
+        viewModel.products.find(
+          item => item.id === productId
+        );
+
+      if (!product) {
+        return;
+      }
+
+      const rows =
+        product.offerings.map(offering => {
+          return (
+            '<tr>' +
+              '<td>' +
+                '<button ' +
+                  'class="link-button" ' +
+                  'onclick="openOffering(\'' +
+                    offering.id +
+                  '\')">' +
+                  escapeHtml(
+                    offering.name
+                  ) +
+                '</button>' +
+              '</td>' +
+
+              '<td>' +
+                escapeHtml(
+                  offering.serviceName
+                ) +
+              '</td>' +
+
+              '<td>' +
+                escapeHtml(
+                  offering.domainName
+                ) +
+              '</td>' +
+
+              '<td>' +
+                renderTag(
+                  offering.relationship.role
+                ) +
+              '</td>' +
+
+              '<td>' +
+                renderTag(
+                  offering.relationship
+                    .confidence
+                ) +
+              '</td>' +
+            '</tr>'
+          );
+        });
+
+      document.getElementById(
+        'breadcrumb'
+      ).textContent =
+        'Products / ' + product.name;
+
+      document.getElementById(
+        'content'
+      ).innerHTML =
+        '<div class="detail-navigation">' +
+          '<button ' +
+            'class="back-button" ' +
+            'onclick="showPage(\'products\')">' +
+            '← Products' +
+          '</button>' +
+        '</div>' +
+
+        renderHero(
+          'PRODUCT / SYSTEM',
+          product.name,
+          product.description ||
+            'No validated product description yet.'
+        ) +
+
+        '<section class="metrics">' +
+          renderMetric(
+            product.vendor || 'Unknown',
+            'Vendor',
+            'Supplier or source'
+          ) +
+
+          renderMetric(
+            product.lifecycle,
+            'Lifecycle',
+            'Current state'
+          ) +
+
+          renderMetric(
+            product.offerings.length,
+            'Offerings',
+            'Mapped relationships'
+          ) +
+
+          renderMetric(
+            product.validationStatus,
+            'Validation',
+            'Evidence status'
+          ) +
+
+          renderMetric(
+            product.source,
+            'Source',
+            'Record provenance'
+          ) +
+        '</section>' +
+
+        renderTable(
+          [
+            'Offering',
+            'Service',
+            'Domain',
+            'Role',
+            'Confidence'
+          ],
+          rows
+        );
+
+      window.scrollTo({
+        top: 0
+      });
+    }
+
+    function filterRows(
+      query,
+      domain = ''
+    ) {
+      const normalizedQuery =
+        String(query || '')
+          .toLowerCase();
+
+      const rows = [
+        ...document.querySelectorAll(
+          'tbody tr'
+        )
+      ];
+
+      let visible = 0;
+
+      rows.forEach(row => {
+        const matchesQuery =
+          !normalizedQuery ||
+          row.dataset.search?.includes(
+            normalizedQuery
+          );
+
+        const matchesDomain =
+          !domain ||
+          row.dataset.domain === domain;
+
+        const shouldDisplay =
+          matchesQuery && matchesDomain;
+
+        row.classList.toggle(
+          'hidden',
+          !shouldDisplay
+        );
+
+        if (shouldDisplay) {
+          visible += 1;
+        }
+      });
+
+      const count =
+        document.getElementById(
+          'visible-count'
+        );
+
+      if (count) {
+        count.textContent =
+          visible + ' visible';
+      }
+    }
+
+    fetch('/api/view-model')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(
+            'API returned ' +
+            response.status
+          );
+        }
+
+        return response.json();
+      })
+      .then(data => {
+        viewModel = data;
+        showPage('overview');
+      })
+      .catch(error => {
+        document.getElementById(
+          'content'
+        ).innerHTML =
+          '<div class="error">' +
+            'Unable to load portfolio: ' +
+            escapeHtml(error.message) +
+          '</div>';
+      });
+  </script>
 </body>
 </html>`;
 
-const server = http.createServer((req, res) => {
-  const requestUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  const pathname = requestUrl.pathname;
+const server = http.createServer(
+  (req, res) => {
+    const url = new URL(
+      req.url,
+      `http://${req.headers.host || 'localhost'}`
+    );
 
-  if (pathname === '/healthz') {
-    return json(res, 200, {
-      status: 'ok',
-      service: 'enterprise-services-portfolio'
+    const pathname = url.pathname;
+
+    if (pathname === '/healthz') {
+      return sendJson(res, 200, {
+        status: 'ok',
+        service: SERVICE_NAME
+      });
+    }
+
+    if (pathname === '/api/portfolio') {
+      return sendJson(
+        res,
+        200,
+        portfolio
+      );
+    }
+
+    if (
+      pathname === '/api/view-model'
+    ) {
+      return sendJson(
+        res,
+        200,
+        buildViewModel()
+      );
+    }
+
+    if (pathname === '/api/summary') {
+      const data = buildViewModel();
+
+      return sendJson(res, 200, {
+        domains: data.domains.length,
+        services: data.services.length,
+        offerings: data.offerings.length,
+        products: data.products.length,
+        relationships:
+          data.relationships.length,
+        assessments:
+          data.assessments.length,
+        coverage: data.coverage
+      });
+    }
+
+    if (pathname === '/api/services') {
+      return sendJson(
+        res,
+        200,
+        buildViewModel().services
+      );
+    }
+
+    if (pathname === '/api/offerings') {
+      return sendJson(
+        res,
+        200,
+        buildViewModel().offerings
+      );
+    }
+
+    if (pathname === '/api/products') {
+      return sendJson(
+        res,
+        200,
+        buildViewModel().products
+      );
+    }
+
+    if (
+      pathname ===
+      '/api/relationships'
+    ) {
+      return sendJson(
+        res,
+        200,
+        portfolio.relationships
+      );
+    }
+
+    if (
+      pathname ===
+      '/api/assessments'
+    ) {
+      return sendJson(
+        res,
+        200,
+        portfolio.assessments
+      );
+    }
+
+    if (
+      pathname ===
+      '/api/data-quality'
+    ) {
+      return sendJson(
+        res,
+        200,
+        validation
+      );
+    }
+
+    if (pathname === '/') {
+      res.writeHead(200, {
+        'Content-Type':
+          'text/html; charset=utf-8',
+        'Cache-Control': 'no-store'
+      });
+
+      res.end(HTML);
+      return;
+    }
+
+    sendJson(res, 404, {
+      error: 'Not found'
     });
   }
+);
 
-  if (pathname === '/api/portfolio') {
-    return json(res, 200, portfolio);
+server.listen(
+  PORT,
+  '0.0.0.0',
+  () => {
+    console.log(
+      JSON.stringify({
+        level: 'info',
+        message:
+          'Enterprise Services Portfolio started',
+        service: SERVICE_NAME,
+        port: PORT,
+        domains:
+          portfolio.domains.length,
+        services:
+          portfolio.services.length,
+        offerings:
+          portfolio.offerings.length,
+        products:
+          portfolio.products.length
+      })
+    );
   }
-
-  if (pathname === '/api/summary') {
-    return json(res, 200, getSummary());
-  }
-
-  if (pathname === '/') {
-    res.writeHead(200, {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'no-store'
-    });
-
-    res.end(HTML);
-    return;
-  }
-
-  json(res, 404, {
-    error: 'Not found'
-  });
-});
-
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(JSON.stringify({
-    level: 'info',
-    message: 'Enterprise Services Portfolio started',
-    service: process.env.OTEL_SERVICE_NAME || 'test-mike',
-    port: PORT
-  }));
-});
+);
