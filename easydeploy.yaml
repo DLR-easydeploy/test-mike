@@ -1,0 +1,10 @@
+# One project and the services it deploys.
+# Where each push lands is decided by the platform's environment triggers.
+apiVersion: v2
+name: "test-mike"
+
+services:
+  - name: "test-mike"
+    dockerfile: Dockerfile
+    port: 3000
+    public: true

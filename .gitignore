@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build output, test coverage, and caches
+dist/
+build/
+coverage/
+.nyc_output/
+.cache/
+
+# Logs
+logs/
+*.log
+
+# IDE and editor files
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+
+# Operating system files
+.DS_Store
+Thumbs.db
