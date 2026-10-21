@@ -1,12 +1,13 @@
 const http = require('node:http');
 const { portfolio, validation } = require('./data/portfolio');
+const store = require('./data/store');
 
 const PORT = Number(process.env.PORT || 3000);
 const SERVICE_NAME = process.env.OTEL_SERVICE_NAME || 'test-mike';
-const submittedAssessments = [];
+store.seedAssessments(portfolio.assessments);
 
 function allAssessments() {
-  return [...portfolio.assessments, ...submittedAssessments];
+  return store.listAssessments();
 }
 
 function readJsonBody(req) {
@@ -199,7 +200,7 @@ function renderRelationships(){const byOffering=new Map(vm.offerings.map(o=>[o.i
 function renderAssessments(){const offeringById=new Map(vm.offerings.map(o=>[o.id,o]));const rows=[...vm.assessments].sort((a,b)=>String(b.assessmentDate).localeCompare(String(a.assessmentDate))).map(a=>{const o=offeringById.get(a.entityId);return '<tr data-search="'+esc(((o?.name||'')+' '+a.health+' '+a.maturity+' '+a.direction+' '+a.status).toLowerCase())+'"><td>'+esc(o?.name||a.entityId)+'<div class="sub">'+esc(o?.serviceName||'')+'</div></td><td>'+esc(a.assessmentDate||'')+'</td><td>'+health(a.health)+'</td><td>'+tag(a.maturity)+'</td><td>'+tag(a.direction)+'</td><td>'+tag(a.risk)+'</td><td>'+tag(a.strategicFit)+'</td><td>'+synthetic(a)+tag(a.status)+'</td></tr>'});return hero('ASSESS','Assessments','Point-in-time records covering health, maturity, direction, lifecycle, risk, cost, strategic fit, evidence, outcomes, and recommended action.')+'<section class="panel tablePanel">'+toolbar('assessments')+table(['Offering','Date','Health','Maturity','Direction','Risk','Strategic fit','State'],rows).replace('<section class="panel tablePanel">','').replace('</section>','')+'</section>'}
 
 function renderWorkspace(){
-  return hero('ASSESSMENT WORKSPACE','Assess an offering','Create a new point-in-time assessment without overwriting assessment history.','V1 saves new assessments in server memory only. They survive page refreshes but reset when the Node process restarts or EasyDeploy redeploys.')+
+  return hero('ASSESSMENT WORKSPACE','Assess an offering','Create a new point-in-time assessment without overwriting assessment history.','Assessments are stored in SQLite. Local data survives app restarts. EasyDeploy persistence still requires the platform to mount persistent storage at /data.')+
   '<section class="workspaceGrid">'+
     '<div class="panel formPanel"><div class="eyebrow">SELECT OFFERING</div><h2 style="margin-top:0">Assessment target</h2><div class="field"><label>Service offering</label><select id="assessmentOffering" onchange="loadAssessmentTarget()"><option value="">Choose an offering…</option>'+vm.offerings.map(o=>'<option value="'+esc(o.id)+'">'+esc(o.domainName+' / '+o.serviceName+' / '+o.name)+'</option>').join('')+'</select></div><div id="assessmentContext" class="summary">Select an offering to see its current assessment and history.</div></div>'+
     '<div class="panel formPanel"><div id="workspaceMessage"></div><div class="eyebrow">NEW ASSESSMENT</div><h2 style="margin-top:0">Point-in-time assessment</h2>'+assessmentForm()+'</div>'+
@@ -229,9 +230,9 @@ async function submitAssessment(){
   const result=await response.json();
   if(!response.ok){document.getElementById('workspaceMessage').innerHTML='<div class="warningBox">'+esc(result.error||'Unable to save assessment')+'</div>';return;}
   vm=await fetch('/api/view-model').then(r=>r.json());
-  document.getElementById('workspaceMessage').innerHTML='<div class="successBox">Assessment saved for this running V1 session.</div>';
+  document.getElementById('workspaceMessage').innerHTML='<div class="successBox">Assessment saved to SQLite.</div>';
   clearAssessmentForm();
-  document.getElementById('workspaceMessage').innerHTML='<div class="successBox">Assessment saved for this running V1 session.</div>';
+  document.getElementById('workspaceMessage').innerHTML='<div class="successBox">Assessment saved to SQLite.</div>';
   loadAssessmentTarget();
 }
 
@@ -291,13 +292,15 @@ const server = http.createServer((req, res) => {
         owner: data.owner || offering.owner || '', assessor: data.assessor || '',
         status: 'Submitted', syntheticDemo: false, source: 'Proposed'
       };
-      submittedAssessments.push(assessment);
-      return sendJson(res, 201, assessment);
+      const saved = store.createAssessment(assessment);
+      return sendJson(res, 201, saved);
     }).catch(error => sendJson(res, 400, { error: error.message || 'Invalid request.' }));
   }
 
   if (path === '/api/assessments') return sendJson(res, 200, allAssessments());
   if (path === '/api/data-quality') return sendJson(res, 200, validation);
+  if (path === '/api/storage') return sendJson(res, 200, store.storageInfo());
+  if (path === '/api/export/assessments') return sendJson(res, 200, { exportedAt: new Date().toISOString(), assessments: allAssessments() });
 
   if (path === '/') {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -307,6 +310,9 @@ const server = http.createServer((req, res) => {
 
   sendJson(res, 404, { error: 'Not found' });
 });
+
+process.on('SIGTERM', () => { store.close(); process.exit(0); });
+process.on('SIGINT', () => { store.close(); process.exit(0); });
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(JSON.stringify({
