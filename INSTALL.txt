@@ -1,21 +1,23 @@
-COMPLETE REPLACEMENT PACKAGE
+LARGE CHUNK: SQLITE MASTER DATA + PORTFOLIO ADMIN
 
-Repository path:
+Repository:
 /Users/mwolfe@digitalrealty.com/Projects/test-mike
 
 1. Unzip the package in Downloads.
-2. Copy all package contents into the repository:
-   cp -R ~/Downloads/enterprise_services_portfolio_command_center/. /Users/mwolfe@digitalrealty.com/Projects/test-mike/
+2. Copy all contents into the repository:
+   cp -R ~/Downloads/enterprise_services_portfolio_admin/. "/Users/mwolfe@digitalrealty.com/Projects/test-mike/"
 3. Keep the existing easydeploy.yaml unchanged.
 4. Install and run:
-   cd /Users/mwolfe@digitalrealty.com/Projects/test-mike
+   cd "/Users/mwolfe@digitalrealty.com/Projects/test-mike"
    npm install
    PORT=3000 DATABASE_PATH=./data/portfolio.db npm start
 5. Verify:
    curl -s http://localhost:3000/healthz
    curl -s http://localhost:3000/api/storage
-6. Test Command Center, Heatmap, Compare Domains, Assessment Workspace, and Action Register.
+6. Open Portfolio Admin and test one create/edit/archive cycle using a temporary record.
 7. Stop with Control+C and push:
    git add -A
-   git commit -m "feat: add portfolio command center and action register"
+   git commit -m "feat: add persistent portfolio administration"
    git push origin main
+
+The existing SQLite database is upgraded in place. Existing assessment and action data is retained.

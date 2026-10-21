@@ -1,28 +1,40 @@
-# Enterprise Services Portfolio Command Center
+# Enterprise Services Portfolio: Administration Release
 
-Features:
-- Management Command Center and attention view
-- Domain comparison
-- Domain → Service → Offering heatmap
-- Portfolio Health
-- Assessment Workspace and history
-- SQLite-backed assessments
-- Persistent Action Register with status updates
-- Offering/product drill-through
-- Data-quality controls
-- Full JSON portfolio backup
+This larger release moves the master portfolio into SQLite and adds a self-contained editing layer.
 
-Local run:
+## Included
+
+- Existing Command Center, heatmap, comparison, assessments, and action register
+- SQLite-backed Domains, Services, Offerings, Products, and Relationships
+- Create and edit forms for all master entities
+- Archive rather than hard-delete
+- Relationship role, confidence, status, and notes
+- Audit history
+- Data-quality checks for orphans, missing mappings, and missing owners
+- Merge import from the JSON portfolio export
+- Full JSON backup/export
+- Automatic seed migration from `portfolio.js` when master tables are empty
+
+## Run
 
     npm install
     PORT=3000 DATABASE_PATH=./data/portfolio.db npm start
 
-Useful endpoints:
-- /healthz
-- /api/summary
-- /api/storage
-- /api/actions
-- /api/export/assessments
-- /api/export/portfolio
+## API
 
-The Docker image writes SQLite to /data/portfolio.db. Durable EasyDeploy persistence requires /data to be mounted to persistent platform storage. Keep easydeploy.yaml unchanged unless the EasyDeploy platform team supplies an approved persistence configuration.
+- `/healthz`
+- `/api/view-model`
+- `/api/storage`
+- `/api/portfolio-quality`
+- `/api/admin/domains`
+- `/api/admin/services`
+- `/api/admin/offerings`
+- `/api/admin/products`
+- `/api/admin/relationships`
+- `/api/admin/audit`
+- `/api/import/portfolio`
+- `/api/export/portfolio`
+
+## Persistence
+
+Local SQLite data is stored at `./data/portfolio.db`. The Docker image uses `/data/portfolio.db`. Durable EasyDeploy persistence requires the platform to mount `/data` as persistent storage.
